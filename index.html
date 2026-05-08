@@ -9,7 +9,6 @@
     <title>MonoFlash</title>
 
     <script>
-        // Cloudflare Worker URL - Simple HTTP sync (no Firebase SDK)
         const WORKER_URL = 'https://monoflash.wasif-akand08.workers.dev';
     </script>
 
@@ -64,39 +63,35 @@
         .sync-btn{width:100%;padding:12px;background:var(--surface);color:#fff;border:1px solid var(--border-b);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;font-size:.85rem;font-weight:600;letter-spacing:.5px;transition:all .25s cubic-bezier(.4,0,.2,1);text-transform:uppercase;position:relative;}
         .sync-btn:hover{background:var(--surface-el);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,0,0,.8),0 0 12px rgba(255,255,255,.08);transform:translateY(-1px);}
         .sync-btn:active{transform:translateY(0) scale(.98);transition:all .1s;}
-        .sync-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-        .sync-btn:disabled:hover{background:var(--surface);border-color:var(--border-b);box-shadow:none;}
-
-        /* Progress dot / ring */
         .dot-wrap{width:24px;height:24px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .dot{width:10px;height:10px;border-radius:50%;background:var(--dim);transition:background var(--tf),box-shadow var(--tf);}
-        .dot.online {background:var(--ok); box-shadow:0 0 8px var(--ok),0 0 16px rgba(46,204,113,.3);animation:dotPulse 2s infinite;}
+        .dot.online{background:var(--ok);box-shadow:0 0 8px var(--ok),0 0 16px rgba(46,204,113,.3);animation:dotPulse 2s infinite;}
         .dot.offline{background:var(--warn);box-shadow:0 0 8px var(--warn);}
-        .dot.error  {background:var(--err); box-shadow:0 0 8px var(--err);}
+        .dot.error{background:var(--err);box-shadow:0 0 8px var(--err);}
         .dot.syncing{display:none;}
         @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.9)}}
-
         .pring{position:absolute;inset:0;width:24px;height:24px;display:none;}
         .pring.show{display:block;}
         .pring-track{fill:none;stroke:var(--border-b);stroke-width:2.5;}
-        .pring-fill {fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);transition:stroke-dashoffset .35s ease;}
-
+        .pring-fill{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);transition:stroke-dashoffset .35s ease;}
         .device-id{font-size:.65rem;color:var(--dimmer);margin-top:8px;text-align:center;font-family:monospace;padding:6px;background:rgba(0,0,0,.3);border-radius:4px;word-break:break-all;}
         .sync-help{font-size:.65rem;color:var(--dimmer);text-align:center;margin-top:6px;line-height:1.3;}
-        
         .sb-home-btn-subtle{all:unset;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 8px;cursor:pointer;color:var(--text);font-size:.85rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:all var(--tf);border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);box-shadow:0 2px 8px rgba(0,0,0,.3);user-select:none;}
         .sb-home-btn-subtle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);box-shadow:0 4px 12px rgba(0,0,0,.5);transform:translateY(-1px);}
         .sb-home-btn-subtle:active{transform:scale(.96);}
-        
         .add-btn{padding:12px;border:1px dashed var(--border-b);text-align:center;margin:8px 8px 12px;cursor:pointer;color:var(--dim);border-radius:8px;font-size:.85rem;font-weight:600;letter-spacing:.5px;transition:all var(--tf);text-transform:uppercase;}
         .add-btn:hover{color:var(--text);border-color:var(--accent);background:rgba(255,255,255,.03);}
 
         /* MAIN */
         #main{flex:1;display:flex;flex-direction:column;position:relative;width:100%;}
-        header{padding:16px 20px;border-bottom:1px solid var(--border-b);display:flex;align-items:center;gap:16px;background:var(--surface);box-shadow:var(--sh-md);position:relative;z-index:10;}
+        header{padding:16px 20px;border-bottom:1px solid var(--border-b);display:flex;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--sh-md);position:relative;z-index:10;}
         .menu-btn{font-size:1.5rem;cursor:pointer;color:var(--text);transition:all .3s cubic-bezier(.4,0,.2,1);padding:8px;margin:-8px;user-select:none;}
         .menu-btn:hover{transform:scale(1.15);text-shadow:0 0 8px rgba(255,255,255,.2);}
         .menu-btn:active{transform:scale(.9);}
+        .back-btn{font-size:1.3rem;cursor:pointer;color:var(--text);transition:all .3s cubic-bezier(.4,0,.2,1);padding:6px 10px;margin:-6px -4px;user-select:none;border-radius:8px;border:1px solid var(--border-b);background:var(--surface-el);display:none;align-items:center;gap:6px;font-weight:700;font-size:.85rem;letter-spacing:.5px;}
+        .back-btn:hover{background:rgba(255,255,255,.08);border-color:var(--border-b);transform:translateX(-2px);}
+        .back-btn:active{transform:scale(.96);}
+        .back-btn.show{display:flex;}
         #header-title{font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         #content-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px;position:relative;}
         #content-area::-webkit-scrollbar{width:6px;}
@@ -104,6 +99,33 @@
         .tab-view{display:none;height:100%;animation:fadeIn .4s cubic-bezier(.4,0,.2,1);flex-direction:column;}
         .tab-view.active{display:flex;}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ── LESSON SELECTION ─────────────────────────────────── */
+        #tab-lessons{padding:0;}
+        .lessons-header{margin-bottom:20px;}
+        .lessons-title{font-size:1.4rem;font-weight:800;letter-spacing:1px;margin-bottom:4px;}
+        .lessons-subtitle{font-size:.8rem;color:var(--dim);}
+        .lesson-card{border:1px solid var(--border-b);border-radius:12px;background:var(--surface-el);margin-bottom:10px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);overflow:hidden;position:relative;}
+        .lesson-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#fff,#555);transform:scaleY(0);transform-origin:top;transition:transform var(--tn);}
+        .lesson-card:hover{border-color:#555;box-shadow:0 6px 24px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.05);transform:translateY(-2px);}
+        .lesson-card:hover::before{transform:scaleY(1);}
+        .lesson-card:active{transform:translateY(0) scale(.98);}
+        .lesson-card-inner{padding:16px 16px 14px;}
+        .lesson-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px;}
+        .lesson-card-name{font-weight:700;font-size:1rem;letter-spacing:.3px;line-height:1.3;}
+        .lesson-card-del{color:var(--dimmer);cursor:pointer;font-size:1.1rem;padding:4px;transition:color .2s,transform .2s;flex-shrink:0;}
+        .lesson-card-del:hover{color:var(--err);transform:scale(1.2) rotate(90deg);}
+        .lesson-card-meta{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap;}
+        .lesson-meta-item{font-size:.75rem;color:var(--dimmer);display:flex;align-items:center;gap:4px;}
+        .lesson-meta-item span{color:var(--dim);}
+        .lesson-progress-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+        .lesson-progress-bar{height:100%;background:linear-gradient(90deg,#fff,#aaa);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(255,255,255,.3);}
+        .lesson-progress-pct{font-size:.65rem;color:var(--dimmer);text-align:right;margin-top:4px;}
+        .lessons-add-section{margin-top:20px;border-top:1px solid var(--border-b);padding-top:20px;}
+        .lessons-add-title{font-size:.85rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;color:var(--dim);}
+        .lessons-empty{text-align:center;padding:40px 20px;color:var(--dimmer);}
+        .lessons-empty-icon{font-size:2.5rem;margin-bottom:12px;}
+        .lessons-empty-text{font-size:.9rem;line-height:1.5;}
 
         /* FLASHCARD */
         .progress-bar-wrap{width:100%;height:6px;background:var(--border);margin-bottom:16px;border-radius:3px;overflow:hidden;opacity:.9;transition:opacity var(--tn);box-shadow:inset 0 1px 3px rgba(0,0,0,.5);}
@@ -128,7 +150,6 @@
         .btn:active{transform:translateY(0) scale(.97);box-shadow:var(--sh-sm);transition:all .1s;}
         .btn-primary{background:linear-gradient(135deg,#fff 0%,#ccc 100%);color:#000;border:none;box-shadow:0 4px 16px rgba(255,255,255,.1),0 0 0 1px rgba(255,255,255,.2);}
         .btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);box-shadow:0 8px 24px rgba(255,255,255,.15),0 0 16px rgba(255,255,255,.12);}
-        .btn-primary:active{transform:translateY(0) scale(.97);}
         :focus-visible{outline:2px solid var(--accent);outline-offset:4px;}
 
         /* CONTAINERS */
@@ -146,20 +167,20 @@
         .cont-btn:hover{background:var(--surface-el);color:var(--text);border-color:var(--border-b);transform:translateY(-1px);}
         .cont-btn.active{background:linear-gradient(135deg,#fff 0%,#ccc 100%);color:#000;border-color:var(--accent);}
         .cont-btn.missed{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.3);color:#e74c3c;}
-        .cont-btn.missed:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);box-shadow:0 0 8px rgba(231,76,60,.2);}
-        .cont-btn.missed.active{background:rgba(231,76,60,.2);border-color:#e74c3c;color:#e74c3c;box-shadow:0 0 12px rgba(231,76,60,.3);}
+        .cont-btn.missed:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);}
+        .cont-btn.missed.active{background:rgba(231,76,60,.2);border-color:#e74c3c;color:#e74c3c;}
         .cont-btn.bookmarks{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:#ffd700;}
-        .cont-btn.bookmarks:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);box-shadow:0 0 8px rgba(255,215,0,.2);}
-        .cont-btn.bookmarks.active{background:rgba(255,215,0,.2);border-color:#ffd700;color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,.3);}
+        .cont-btn.bookmarks:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);}
+        .cont-btn.bookmarks.active{background:rgba(255,215,0,.2);border-color:#ffd700;color:#ffd700;}
         .cont-info{font-size:.7rem;color:var(--dimmer);margin-top:8px;width:100%;text-align:center;}
 
         /* STATS */
         .stat-box{border:1px solid var(--border-b);padding:24px;margin-bottom:12px;border-radius:12px;text-align:center;background:var(--surface-el);box-shadow:var(--sh-sm);transition:all var(--tn);}
         .stat-box:hover{box-shadow:0 6px 24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.05);transform:translateY(-2px);}
         .stat-box.hi{border-color:var(--accent);box-shadow:0 0 16px rgba(255,255,255,.1);}
-        .stat-num{font-size:2.5rem;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#fff 0%,#888 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;transition:transform .3s cubic-bezier(.4,0,.2,1);}
-        .stat-box:hover .stat-num{transform:scale(1.05);}
+        .stat-num{font-size:2.5rem;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#fff 0%,#888 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
         .stat-label{color:var(--dim);font-size:.85rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+        .stat-scope-label{font-size:.7rem;color:var(--dimmer);text-align:center;margin-bottom:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;border:1px solid var(--border-b);border-radius:6px;background:var(--surface-el);}
         .cont-stat{border:1px solid var(--border);padding:16px;margin-bottom:8px;border-radius:10px;background:var(--surface-el);}
         .cont-stat-h{font-weight:700;margin-bottom:8px;font-size:.9rem;}
         .cont-stat-d{color:var(--dim);font-size:.85rem;}
@@ -181,16 +202,18 @@
         .db-val{color:var(--dim);font-size:.85rem;word-wrap:break-word;line-height:1.4;}
         .db-item-actions{display:flex;gap:6px;flex-direction:column;flex-shrink:0;}
         .db-btn-edit{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:#ffd700;}
-        .db-btn-edit:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);box-shadow:0 0 8px rgba(255,215,0,.2);}
+        .db-btn-edit:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);}
         .db-btn-delete{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.3);color:#e74c3c;}
-        .db-btn-delete:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);box-shadow:0 0 8px rgba(231,76,60,.2);}
+        .db-btn-delete:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);}
         .db-item-edit{display:flex;gap:12px;align-items:flex-start;flex:1;}
         .db-edit-inputs{flex:1;display:flex;flex-direction:column;gap:8px;}
         .db-edit-input{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border-b);padding:10px;border-radius:6px;font-family:inherit;font-size:.85rem;transition:all var(--tf);}
         .db-edit-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,255,255,.1);}
+        .db-lesson-badge{font-size:.7rem;color:var(--dimmer);background:rgba(255,255,255,.05);padding:2px 8px;border-radius:4px;margin-bottom:8px;display:inline-block;}
 
         /* NAV */
-        nav{display:flex;border-top:1px solid var(--border-b);padding-bottom:env(safe-area-inset-bottom);background:var(--surface);box-shadow:0 -4px 16px rgba(0,0,0,.5);position:relative;z-index:10;}
+        nav{display:none;border-top:1px solid var(--border-b);padding-bottom:env(safe-area-inset-bottom);background:var(--surface);box-shadow:0 -4px 16px rgba(0,0,0,.5);position:relative;z-index:10;}
+        nav.show{display:flex;}
         .nav-item{flex:1;padding:16px 12px;text-align:center;color:var(--dim);cursor:pointer;font-size:.8rem;font-weight:700;letter-spacing:1px;transition:all var(--tf);text-transform:uppercase;user-select:none;position:relative;}
         .nav-item::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%) scaleX(0);width:60%;height:2px;background:var(--accent);transition:transform var(--tn);}
         .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
@@ -216,13 +239,11 @@
         .onboarding-buttons{display:flex;gap:12px;flex-direction:column;}
         .onboarding-btn{padding:13px 20px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:#fff;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:.9rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
         .onboarding-btn:hover{transform:translateY(-2px);background:var(--surface-el);box-shadow:0 6px 20px rgba(0,0,0,.9);border-color:var(--accent);}
-        .onboarding-btn:active{transform:translateY(0) scale(.97);}
         .onboarding-btn-primary{background:linear-gradient(135deg,#fff 0%,#ccc 100%);color:#000;border:none;box-shadow:0 4px 16px rgba(255,255,255,.1);}
-        .onboarding-btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);box-shadow:0 8px 24px rgba(255,255,255,.15);}
+        .onboarding-btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);}
         .onboarding-info{font-size:.75rem;color:var(--dimmer);margin-top:16px;line-height:1.5;}
-        .onboarding-info strong{color:var(--dim);}
 
-        /* HOME SECTION */
+        /* HOME */
         .home-content{display:flex;flex-direction:column;gap:24px;padding:8px 0;}
         .home-hero{text-align:center;padding:32px 0;background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,rgba(0,0,0,.3) 100%);border-radius:16px;border:1px solid var(--border-b);margin-bottom:16px;}
         .home-title{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#fff 0%,#aaa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;letter-spacing:-1px;}
@@ -232,7 +253,7 @@
         .home-btn:hover{transform:translateY(-2px);background:var(--surface-el);box-shadow:0 6px 20px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.08);border-color:var(--accent);}
         .home-btn:active{transform:translateY(0) scale(.97);}
         .home-btn-primary{background:linear-gradient(135deg,#fff 0%,#ccc 100%);color:#000;border:none;box-shadow:0 4px 16px rgba(255,255,255,.1);}
-        .home-btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);box-shadow:0 8px 24px rgba(255,255,255,.15);}
+        .home-btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);}
         .home-section{display:flex;flex-direction:column;gap:12px;padding:24px;background:var(--surface-el);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);}
         .home-sec-title{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase;display:flex;gap:8px;align-items:center;}
         .home-sec-icon{font-size:1.3rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
@@ -249,15 +270,8 @@
         .home-subject-name{font-weight:600;color:#fff;font-size:.9rem;}
         .home-subject-count{font-size:.75rem;color:var(--dimmer);background:rgba(255,255,255,.05);padding:2px 8px;border-radius:6px;font-weight:600;}
         .home-no-subjects{color:var(--dimmer);font-size:.9rem;padding:20px;text-align:center;}
-        .home-tips{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
         .home-tip{padding:12px;background:rgba(255,255,255,.03);border-left:3px solid var(--accent);border-radius:6px;color:var(--dim);font-size:.85rem;line-height:1.5;}
         .home-tip strong{color:var(--text);font-weight:600;}
-
-
-        /* NAV VISIBILITY */
-        nav{display:none;}
-        nav.show{display:flex;}
-        
         .home-btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
         .home-btn-group .home-btn{flex:1;min-width:120px;}
         .home-db-sub{color:var(--dim);font-size:.85rem;margin-bottom:12px;line-height:1.4;}
@@ -269,8 +283,6 @@
             .card-face{font-size:1.1rem;padding:24px 20px;}
             .controls{gap:10px;margin-top:16px;padding:0 12px;}
             .btn{flex:1;padding:12px 20px;font-size:.8rem;max-width:160px;}
-            .db-btn-group{flex-direction:column;}
-            .db-btn-group .btn{width:100%;}
             nav{padding-bottom:max(env(safe-area-inset-bottom),8px);}
             .nav-item{padding:14px 8px;font-size:.7rem;}
         }
@@ -286,13 +298,11 @@
     <div class="onboarding-modal">
         <div class="onboarding-title">Welcome to MonoFlash</div>
         <div class="onboarding-subtitle">Your personal flashcard companion with cloud sync</div>
-        
         <div class="onboarding-input-group">
             <label class="onboarding-label">Sync Device ID</label>
             <input type="text" id="onboarding-device-id" class="onboarding-input" placeholder="e.g., my-phone-123" maxlength="50">
             <div class="onboarding-info">Leave blank to auto-generate • Use the same ID on all your devices to sync</div>
         </div>
-        
         <div class="onboarding-buttons">
             <button class="onboarding-btn onboarding-btn-primary" onclick="completeOnboarding()">Get Started</button>
         </div>
@@ -335,159 +345,69 @@
 <main id="main">
     <header>
         <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+        <button class="back-btn" id="back-btn" onclick="goBackToLessons()">← Back</button>
         <h1 id="header-title">Select a Subject</h1>
     </header>
     <section id="content-area">
 
+        <!-- HOME -->
         <div id="tab-home" class="tab-view active">
             <div class="home-content">
                 <div class="home-hero">
-                    <div class="home-title">Welcome to MonoFlash</div>
+                    <div class="home-title">MonoFlash</div>
                     <div class="home-subtitle">Master knowledge with intelligent spaced repetition</div>
                     <div class="home-cta">
                         <button class="home-btn home-btn-primary" onclick="createQuickStart()">Quick Start</button>
                         <button class="home-btn" onclick="toggleSidebar()">Browse Topics</button>
                     </div>
                 </div>
-
                 <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">📈</span>
-                        <span>Your Progress</span>
-                    </div>
-                    <div class="home-stats-grid" id="home-stats-grid">
-                        <div class="home-stat-card">
-                            <div class="home-stat-num" id="home-stat-total-subjects">0</div>
-                            <div class="home-stat-label">Subjects</div>
-                        </div>
-                        <div class="home-stat-card">
-                            <div class="home-stat-num" id="home-stat-total-topics">0</div>
-                            <div class="home-stat-label">Topics</div>
-                        </div>
-                        <div class="home-stat-card">
-                            <div class="home-stat-num" id="home-stat-total-cards">0</div>
-                            <div class="home-stat-label">Cards</div>
-                        </div>
-                        <div class="home-stat-card">
-                            <div class="home-stat-num" id="home-stat-accuracy">-</div>
-                            <div class="home-stat-label">Accuracy</div>
-                        </div>
+                    <div class="home-sec-title"><span class="home-sec-icon">📈</span><span>Your Progress</span></div>
+                    <div class="home-stats-grid">
+                        <div class="home-stat-card"><div class="home-stat-num" id="home-stat-total-subjects">0</div><div class="home-stat-label">Subjects</div></div>
+                        <div class="home-stat-card"><div class="home-stat-num" id="home-stat-total-topics">0</div><div class="home-stat-label">Topics</div></div>
+                        <div class="home-stat-card"><div class="home-stat-num" id="home-stat-total-lessons">0</div><div class="home-stat-label">Lessons</div></div>
+                        <div class="home-stat-card"><div class="home-stat-num" id="home-stat-total-cards">0</div><div class="home-stat-label">Cards</div></div>
                     </div>
                 </div>
-
                 <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">📚</span>
-                        <span>Your Subjects</span>
-                    </div>
-                    <div class="home-subjects" id="home-subjects-list">
-                        <div class="home-no-subjects">No subjects yet. Create one to begin!</div>
-                    </div>
+                    <div class="home-sec-title"><span class="home-sec-icon">📚</span><span>Your Subjects</span></div>
+                    <div class="home-subjects" id="home-subjects-list"><div class="home-no-subjects">No subjects yet. Create one to begin!</div></div>
                 </div>
-
                 <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">🌐</span>
-                        <span>Backup & Restore</span>
-                    </div>
-                    <p class="home-db-sub">Export or import ALL subjects, topics, and cards in one file</p>
+                    <div class="home-sec-title"><span class="home-sec-icon">🌐</span><span>Backup & Restore</span></div>
+                    <p class="home-db-sub">Export or import ALL subjects, topics, lessons, and cards in one file</p>
                     <input id="full-backup-input" type="file" accept=".json" style="display:none" onchange="importFullBackup(event)">
                     <div class="home-btn-group">
                         <button class="home-btn" onclick="exportFullBackup()">📦 Export ALL Data</button>
                         <button class="home-btn" onclick="document.getElementById('full-backup-input').click()">📥 Import ALL Data</button>
                     </div>
                 </div>
-
                 <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">⚙️</span>
-                        <span>Data Management</span>
-                    </div>
+                    <div class="home-sec-title"><span class="home-sec-icon">⚙️</span><span>Data Management</span></div>
                     <div class="home-btn-group">
                         <button class="home-btn" onclick="resetAllData()" style="background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);color:#e74c3c;">🗑️ Clear All Data</button>
                         <button class="home-btn" onclick="downloadDatabaseJson()">💾 Download JSON</button>
                     </div>
-                    <p class="home-db-sub" style="margin-top:12px;color:var(--warn);">⚠️ "Clear All Data" will delete everything. Use "Export ALL Data" first to backup!</p>
                 </div>
-
                 <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">✨</span>
-                        <span>Getting Started</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">1.</span>
-                        <span>Create a <strong>Subject</strong> (e.g., "Biology") using the + Add Subject button</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">2.</span>
-                        <span>Add a <strong>Topic</strong> within your subject (e.g., "Cell Structure")</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">3.</span>
-                        <span>Import or create <strong>Cards</strong> using the Data tab</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">4.</span>
-                        <span>Review cards daily and let <strong>Spaced Repetition</strong> optimize your learning</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">5.</span>
-                        <span>Use <strong>Containers</strong> to focus on specific sections or missed cards</span>
-                    </div>
-                </div>
-
-                <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">💡</span>
-                        <span>Tips & Tricks</span>
-                    </div>
-                    <div class="home-tips">
-                        <div class="home-tip"><strong>Keyboard Shortcuts:</strong> Space to flip • J to Got it • F to Missed • P to Pass • B for Bookmark • S for Sidebar</div>
-                        <div class="home-tip"><strong>Cloud Sync:</strong> Push to Cloud button syncs your cards. Use the same Device ID on all devices to sync data</div>
-                        <div class="home-tip"><strong>Spaced Repetition:</strong> Cards due today appear first. Master cards (7+ days) are shown in Stats</div>
-                        <div class="home-tip"><strong>Bookmarks:</strong> Star important cards for quick review. Filter by bookmarks in the Containers menu</div>
-                        <div class="home-tip"><strong>Missed Cards:</strong> Cards you missed during a session are grouped for easy review</div>
-                    </div>
-                </div>
-
-                <div class="home-section">
-                    <div class="home-sec-title">
-                        <span class="home-sec-icon">✨</span>
-                        <span>Features</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Spaced Repetition (SRS)</strong> - SM-2 algorithm for optimal learning intervals</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Cloud Sync</strong> - Push/pull your cards via Cloudflare Workers</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Bookmarks</strong> - Mark important cards for focused review</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Containers</strong> - Organize cards into manageable chunks</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Analytics</strong> - Track accuracy and mastered cards</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Flexible Input</strong> - Import via text, JSON, or files</span>
-                    </div>
-                    <div class="home-item">
-                        <span class="home-item-bullet">•</span>
-                        <span><strong>Mobile Ready</strong> - Study on any device with offline support</span>
-                    </div>
+                    <div class="home-sec-title"><span class="home-sec-icon">✨</span><span>Getting Started</span></div>
+                    <div class="home-item"><span class="home-item-bullet">1.</span><span>Create a <strong>Subject</strong> → add a <strong>Topic</strong> inside it</span></div>
+                    <div class="home-item"><span class="home-item-bullet">2.</span><span>Select the topic from the sidebar — you'll see the <strong>Lessons screen</strong></span></div>
+                    <div class="home-item"><span class="home-item-bullet">3.</span><span>Add lessons with cards (use the Data tab or ##Lesson format)</span></div>
+                    <div class="home-item"><span class="home-item-bullet">4.</span><span>Click a lesson to start reviewing flashcards</span></div>
+                    <div class="home-item"><span class="home-item-bullet">5.</span><span>Use the ← Back button to return to lesson list anytime</span></div>
+                    <div class="home-tip" style="margin-top:8px;"><strong>Import format:</strong> ##Lesson Name on its own line, then Q -!- A pairs below it</div>
                 </div>
             </div>
         </div>
 
+        <!-- LESSONS LIST -->
+        <div id="tab-lessons" class="tab-view" style="padding:0;">
+            <!-- dynamically rendered -->
+        </div>
+
+        <!-- FLASHCARD -->
         <div id="tab-flashcard" class="tab-view">
             <div class="progress-text" id="progress-text" style="display:none;">1 / 0</div>
             <div class="progress-bar-wrap" id="progress-wrap" style="display:none;">
@@ -515,7 +435,9 @@
             </div>
         </div>
 
+        <!-- STATS -->
         <div id="tab-performance" class="tab-view">
+            <div class="stat-scope-label" id="stat-scope-label">All Topics</div>
             <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Cards Reviewed</div></div>
             <div class="stat-box hi"><div class="stat-num" id="stat-score">0%</div><div class="stat-label">Accuracy</div></div>
             <div class="stat-box"><div class="stat-num" id="stat-due">-</div><div class="stat-label">Cards Due Today</div></div>
@@ -523,26 +445,14 @@
             <div id="container-stats" style="margin-top:24px;"></div>
         </div>
 
+        <!-- DATA -->
         <div id="tab-database" class="tab-view">
-            <h3 class="db-sec-title">➕ Add Cards to Current Topic</h3>
-            <p class="db-sub">Format: Question -!- Answer (one per line)<br>OR JSON: [{"q":"Front","a":"Back"}]</p>
-            <textarea id="json-input" placeholder='What is gravity? -!- Force that attracts objects
-What is speed? -!- Distance over time'></textarea>
-            <input id="file-input" type="file" accept=".json" style="display:none" onchange="importJsonFile(event)">
-            <div class="db-btn-group">
-                <button class="btn btn-primary" onclick="importJson()">Import Data</button>
-                <button class="btn" onclick="exportJson()">Export JSON</button>
-                <button class="btn" onclick="document.getElementById('file-input').click()">Import File</button>
-            </div>
-            <div class="db-list-head">
-                <h3>Current Entries</h3>
-                <button class="btn" onclick="clearAllCards()" style="padding:8px 16px;font-size:.75rem;">Clear All</button>
-            </div>
-            <div id="db-list"></div>
+            <!-- dynamically rendered based on context -->
+            <div id="db-content"></div>
         </div>
 
     </section>
-    <nav>
+    <nav id="main-nav">
         <div class="nav-item active" onclick="switchTab('flashcard',this)">Cards</div>
         <div class="nav-item" onclick="switchTab('performance',this)">Stats</div>
         <div class="nav-item" onclick="switchTab('database',this)">Data</div>
@@ -550,210 +460,161 @@ What is speed? -!- Distance over time'></textarea>
 </main>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+// DATA STRUCTURE (v2 with Lessons)
+//
+// cardContent[subject][topic] = {
+//   lessons: {
+//     "Lesson 1": [ {q,a}, {q,a}, ... ],
+//     "Lesson 2": [ ... ]
+//   }
+// }
+//
+// srsData[subject][topic][lessonName] = [ {interval,easiness,repetitions,nextReview,lastReviewed}, ... ]
+// bookmarks[subject][topic][lessonName] = [ ...indices ]
+// ══════════════════════════════════════════════════════════════
+
 // ── DEVICE ID & ONBOARDING ────────────────────────────────────────────
-function hasCompletedOnboarding() {
-    return localStorage.getItem('monoFlashOnboardingComplete') === 'true';
-}
-
-function showOnboarding() {
-    var modal = document.getElementById('onboarding');
-    if (modal) modal.classList.add('show');
-}
-
-function hideOnboarding() {
-    var modal = document.getElementById('onboarding');
-    if (modal) modal.classList.remove('show');
-}
-
+function hasCompletedOnboarding() { return localStorage.getItem('monoFlashOnboardingComplete') === 'true'; }
+function showOnboarding() { var m=document.getElementById('onboarding'); if(m) m.classList.add('show'); }
+function hideOnboarding() { var m=document.getElementById('onboarding'); if(m) m.classList.remove('show'); }
 function completeOnboarding() {
     var input = document.getElementById('onboarding-device-id');
     var deviceId = input.value.trim();
-    
-    if (deviceId) {
-        // User provided a custom ID
-        localStorage.setItem('monoFlashDeviceId', deviceId);
-    } else {
-        // Auto-generate device ID
-        var id = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
-        localStorage.setItem('monoFlashDeviceId', id);
-    }
-    
-    // Mark onboarding as complete
+    if (!deviceId) deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+    localStorage.setItem('monoFlashDeviceId', deviceId);
     localStorage.setItem('monoFlashOnboardingComplete', 'true');
-    
-    // Reload to refresh with new device ID
     hideOnboarding();
     location.reload();
 }
-
 function getDeviceId() {
-    let id = localStorage.getItem('monoFlashDeviceId');
+    var id = localStorage.getItem('monoFlashDeviceId');
     if (!id) { id = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2,9); localStorage.setItem('monoFlashDeviceId', id); }
     return id;
 }
-
 var DEVICE_ID = getDeviceId();
 document.getElementById('current-device-id').textContent = DEVICE_ID;
-
 function changeSyncId() {
     var n = prompt('Enter a Sync Name (same on all devices):', DEVICE_ID);
     if (n && n.trim()) { localStorage.setItem('monoFlashDeviceId', n.trim()); alert('Linked! Reloading…'); location.reload(); }
 }
 
-// ── CLOUDFLARE SYNC (No Firebase SDK needed) ────────────────────────
-
 // ── SYNC UI ────────────────────────────────────────────────────────────
 var CIRC = 2 * Math.PI * 9;
-var dotEl      = document.getElementById('sync-dot');
-var pringEl    = document.getElementById('pring');
-var pringFill  = document.getElementById('pring-fill');
+var dotEl = document.getElementById('sync-dot');
+var pringEl = document.getElementById('pring');
+var pringFill = document.getElementById('pring-fill');
 var syncTextEl = document.getElementById('sync-text');
 var syncHelpEl = document.getElementById('sync-help');
-
-function setDot(state) {
-    dotEl.className = 'dot ' + state;
-    if (state === 'syncing') { pringEl.classList.add('show'); } else { pringEl.classList.remove('show'); }
-}
-function setRing(pct) {
-    pringFill.style.strokeDashoffset = CIRC * (1 - pct / 100);
-}
+function setDot(state) { dotEl.className='dot '+state; if(state==='syncing') pringEl.classList.add('show'); else pringEl.classList.remove('show'); }
+function setRing(pct) { pringFill.style.strokeDashoffset = CIRC*(1-pct/100); }
 
 // ── DATA ───────────────────────────────────────────────────────────────
 var cardContent = JSON.parse(localStorage.getItem('monoFlashCardContent') || '{}');
 var srsData     = JSON.parse(localStorage.getItem('monoFlashSRSData')     || '{}');
 var bookmarks   = JSON.parse(localStorage.getItem('monoFlashBookmarks')   || '{}');
-var currentSubject = null, currentSub = null;
+
+// Migration: convert old flat cardContent[subject][topic] = [{q,a}] to new format
+function migrateData() {
+    var changed = false;
+    for (var subj in cardContent) {
+        for (var topic in cardContent[subj]) {
+            var val = cardContent[subj][topic];
+            // Old format: array of cards directly
+            if (Array.isArray(val)) {
+                var lessons = {};
+                if (val.length > 0) lessons['Lesson 1'] = val;
+                else lessons['Lesson 1'] = [];
+                cardContent[subj][topic] = { lessons: lessons };
+                changed = true;
+                // Migrate SRS data
+                if (srsData[subj] && Array.isArray(srsData[subj][topic])) {
+                    if (!srsData[subj][topic + '__migrated']) {
+                        var oldSRS = srsData[subj][topic];
+                        srsData[subj][topic] = { 'Lesson 1': oldSRS };
+                    }
+                }
+                // Migrate bookmarks
+                if (bookmarks[subj] && Array.isArray(bookmarks[subj][topic])) {
+                    var oldBM = bookmarks[subj][topic];
+                    bookmarks[subj][topic] = { 'Lesson 1': oldBM };
+                }
+            }
+        }
+    }
+    if (changed) { saveLocal(); console.log('Migrated old data to lesson format'); }
+}
+
+var currentSubject = null, currentTopic = null, currentLesson = null;
 var cardIndex = 0, sessionStats = {total:0,correct:0};
 var shuffledCards = [], dueCards = [];
 var CARDS_PER_CONTAINER = 20;
 var currentContainer = 'all', reviewMissedMode = false, reviewBookmarksMode = false;
 var missedCardsThisSession = new Set();
 
-// ── CLOUDFLARE SYNC FUNCTIONS ──────────────────────────────────────────
-async function pushToCloud() {
-    setDot('syncing'); setRing(20);
-    syncTextEl.textContent = 'Pushing...';
-    syncHelpEl.textContent = 'Uploading to Cloudflare...';
-
-    try {
-        setRing(50);
-        const response = await fetch(WORKER_URL + '?deviceId=' + encodeURIComponent(DEVICE_ID), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                cardContent: cardContent,
-                srsData: srsData,
-                bookmarks: bookmarks
-            })
-        });
-
-        setRing(70);
-        const result = await response.json();
-        
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Upload failed');
-        }
-
-        setRing(100); setDot('online');
-        syncTextEl.textContent = 'Push to Cloud';
-        syncHelpEl.textContent = '✅ Uploaded successfully';
-        setTimeout(function() { 
-            setDot('offline'); 
-            syncHelpEl.textContent = 'Ready to sync';
-        }, 2000);
-    } catch(err) {
-        console.error('Push failed:', err);
-        setDot('error');
-        syncHelpEl.textContent = 'Upload failed: ' + err.message;
-    }
+// ── DATA HELPERS ───────────────────────────────────────────────────────
+function getTopicObj(subj, topic) {
+    if (!cardContent[subj] || !cardContent[subj][topic]) return null;
+    var t = cardContent[subj][topic];
+    if (!t.lessons) t.lessons = {};
+    return t;
 }
-
-function manualSync() { pushToCloud(); }
-
-async function readDatabase() {
-    var btn = document.getElementById('read-text');
-    var help = document.getElementById('sync-help');
-    
-    btn.textContent = '⏳ Downloading...';
-    help.textContent = 'Fetching from Cloudflare...';
-    setDot('syncing'); setRing(20);
-
-    try {
-        setRing(40);
-        const response = await fetch(WORKER_URL + '?deviceId=' + encodeURIComponent(DEVICE_ID), {
-            method: 'GET'
-        });
-
-        setRing(60);
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Download failed');
-        }
-
-        setRing(80);
-
-        if (result.exists && result.data) {
-            // Clear local and replace with cloud data
-            cardContent = result.data.cardContent || {};
-            srsData = result.data.srsData || {};
-            bookmarks = result.data.bookmarks || {};
-            saveLocal();
-            
-            // Reset UI
-            renderSidebar();
-            loadSidebarState();
-            currentSubject = null; currentSub = null;
-            document.getElementById('header-title').textContent = 'Home';
-            renderCard();
-            updateHomeStats();
-            renderHomeSubjects();
-
-            btn.textContent = '✅ Done';
-            help.textContent = 'Data replaced from cloud';
-            setRing(100); setDot('online');
-        } else {
-            help.textContent = 'No cloud data found';
-            btn.textContent = '❌ Empty';
-            setDot('offline');
-        }
-    } catch(err) {
-        console.error('Read error:', err);
-        help.textContent = 'Error: ' + err.message;
-        btn.textContent = '❌ Error';
-        setDot('error');
-    }
-
-    setTimeout(function() { 
-        btn.textContent = '📖 Read Database'; 
-        if(dotEl.className.includes('online')) {
-            setDot('offline');
-            help.textContent = 'Ready to sync';
-        }
-    }, 2000);
+function getLessons(subj, topic) {
+    var t = getTopicObj(subj, topic);
+    return t ? t.lessons : {};
+}
+function getLessonCards(subj, topic, lesson) {
+    var lessons = getLessons(subj, topic);
+    return lessons[lesson] || [];
+}
+function getLessonSRS(subj, topic, lesson) {
+    if (!srsData[subj]) srsData[subj] = {};
+    if (!srsData[subj][topic]) srsData[subj][topic] = {};
+    if (!srsData[subj][topic][lesson]) srsData[subj][topic][lesson] = [];
+    return srsData[subj][topic][lesson];
+}
+function getLessonBookmarks(subj, topic, lesson) {
+    if (!bookmarks[subj]) bookmarks[subj] = {};
+    if (!bookmarks[subj][topic]) bookmarks[subj][topic] = {};
+    if (!bookmarks[subj][topic][lesson]) bookmarks[subj][topic][lesson] = [];
+    return bookmarks[subj][topic][lesson];
+}
+function totalCardsInTopic(subj, topic) {
+    var lessons = getLessons(subj, topic);
+    var total = 0;
+    for (var l in lessons) total += lessons[l].length;
+    return total;
+}
+function totalLessonsInTopic(subj, topic) {
+    return Object.keys(getLessons(subj, topic)).length;
 }
 
 // ── SRS ────────────────────────────────────────────────────────────────
 function createSRS() { return {interval:0,easiness:2.5,repetitions:0,nextReview:Date.now(),lastReviewed:null}; }
 function updateSRS(s, q) {
     s.lastReviewed = Date.now();
-    if (q === 0) { s.repetitions = 0; s.interval = 1; }
+    if (q === 0) { s.repetitions=0; s.interval=1; }
     else {
         s.repetitions++;
-        s.interval = s.repetitions === 1 ? 1 : s.repetitions === 2 ? 6 : Math.round(s.interval * s.easiness);
-        s.easiness = Math.max(1.3, s.easiness + 0.1 - (1 - q) * 0.2);
+        s.interval = s.repetitions===1 ? 1 : s.repetitions===2 ? 6 : Math.round(s.interval*s.easiness);
+        s.easiness = Math.max(1.3, s.easiness+0.1-(1-q)*0.2);
     }
-    s.nextReview = Date.now() + s.interval * 86400000;
+    s.nextReview = Date.now() + s.interval*86400000;
     return s;
 }
-function isDue(s) { return !s || !s.nextReview || Date.now() >= s.nextReview; }
+function isDue(s) { return !s || !s.nextReview || Date.now()>=s.nextReview; }
 function ensureSRS() {
     for (var subj in cardContent) {
         if (!srsData[subj]) srsData[subj] = {};
-        for (var sub in cardContent[subj]) {
-            if (!srsData[subj][sub]) srsData[subj][sub] = [];
-            var need = cardContent[subj][sub].length - srsData[subj][sub].length;
-            for (var i = 0; i < need; i++) srsData[subj][sub].push(createSRS());
+        for (var topic in cardContent[subj]) {
+            if (!srsData[subj][topic]) srsData[subj][topic] = {};
+            var lessons = getLessons(subj, topic);
+            for (var lesson in lessons) {
+                var cards = lessons[lesson];
+                if (!srsData[subj][topic][lesson]) srsData[subj][topic][lesson] = [];
+                var need = cards.length - srsData[subj][topic][lesson].length;
+                for (var i=0; i<need; i++) srsData[subj][topic][lesson].push(createSRS());
+            }
         }
     }
 }
@@ -767,50 +628,105 @@ function saveLocal() {
 }
 function saveData() { saveLocal(); }
 
+// ── CLOUD SYNC ──────────────────────────────────────────────────────────
+async function pushToCloud() {
+    setDot('syncing'); setRing(20);
+    syncTextEl.textContent = 'Pushing...';
+    syncHelpEl.textContent = 'Uploading to Cloudflare...';
+    try {
+        setRing(50);
+        var response = await fetch(WORKER_URL+'?deviceId='+encodeURIComponent(DEVICE_ID), {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({cardContent,srsData,bookmarks})
+        });
+        setRing(70);
+        var result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error||'Upload failed');
+        setRing(100); setDot('online');
+        syncTextEl.textContent = 'Push to Cloud';
+        syncHelpEl.textContent = '✅ Uploaded successfully';
+        setTimeout(function(){ setDot('offline'); syncHelpEl.textContent='Ready to sync'; }, 2000);
+    } catch(err) {
+        setDot('error');
+        syncHelpEl.textContent = 'Upload failed: '+err.message;
+    }
+}
+function manualSync() { pushToCloud(); }
+async function readDatabase() {
+    var btn = document.getElementById('read-text');
+    btn.textContent = '⏳ Downloading...';
+    syncHelpEl.textContent = 'Fetching from Cloudflare...';
+    setDot('syncing'); setRing(20);
+    try {
+        setRing(40);
+        var response = await fetch(WORKER_URL+'?deviceId='+encodeURIComponent(DEVICE_ID));
+        setRing(60);
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.error||'Download failed');
+        setRing(80);
+        if (result.exists && result.data) {
+            cardContent = result.data.cardContent||{};
+            srsData     = result.data.srsData||{};
+            bookmarks   = result.data.bookmarks||{};
+            migrateData();
+            saveLocal();
+            renderSidebar(); loadSidebarState();
+            currentSubject=null; currentTopic=null; currentLesson=null;
+            document.getElementById('header-title').textContent='Home';
+            switchToHome();
+            btn.textContent='✅ Done';
+            syncHelpEl.textContent='Data replaced from cloud';
+            setRing(100); setDot('online');
+        } else { syncHelpEl.textContent='No cloud data found'; btn.textContent='❌ Empty'; setDot('offline'); }
+    } catch(err) { syncHelpEl.textContent='Error: '+err.message; btn.textContent='❌ Error'; setDot('error'); }
+    setTimeout(function(){ btn.textContent='📖 Read Database'; if(dotEl.className.includes('online')){ setDot('offline'); syncHelpEl.textContent='Ready to sync'; } },2000);
+}
+
 // ── SIDEBAR ────────────────────────────────────────────────────────────
 function renderSidebar() {
     var list = document.getElementById('subject-list');
     list.innerHTML = '';
     for (var subj in cardContent) {
         (function(subj){
-            var item = document.createElement('div'); item.className = 'subject-item';
-            var title = document.createElement('div'); title.className = 'subject-title';
-            title.onclick = function(e){ if(e.target.className.includes('del-icon')) return; toggleSubject(subj); };
+            var item = document.createElement('div'); item.className='subject-item';
+            var title = document.createElement('div'); title.className='subject-title';
+            title.onclick = function(e){ if(e.target.className.includes&&e.target.className.includes('del-icon')) return; toggleSubject(subj); };
             var ttxt = document.createElement('span'); ttxt.textContent = subj;
             title.appendChild(ttxt);
-            var actions = document.createElement('div'); actions.className = 'subject-actions';
-            var chev = document.createElement('span'); chev.className = 'chevron'; chev.textContent = '▼';
+            var actions = document.createElement('div'); actions.className='subject-actions';
+            var chev = document.createElement('span'); chev.className='chevron'; chev.textContent='▼';
             actions.appendChild(chev);
-            var del = document.createElement('span'); del.className = 'del-icon'; del.textContent = '×';
+            var del = document.createElement('span'); del.className='del-icon'; del.textContent='×';
             del.onclick = function(e){ e.stopPropagation(); deleteSubject(subj); };
             actions.appendChild(del);
             title.appendChild(actions); item.appendChild(title);
-
-            var subList = document.createElement('div'); subList.className = 'sub-list';
-            subList.id = 'sub-' + safeId(subj);
-            for (var sub in cardContent[subj]) {
-                (function(sub){
-                    var si = document.createElement('div'); si.className = 'sub-item';
-                    si.onclick = function(e){ if(e.target.className.includes('del-icon')) return; loadTopic(subj, sub); };
+            var subList = document.createElement('div'); subList.className='sub-list';
+            subList.id = 'sub-'+safeId(subj);
+            for (var topic in cardContent[subj]) {
+                (function(topic){
+                    var si = document.createElement('div'); si.className='sub-item';
+                    si.onclick = function(e){ if(e.target.className&&e.target.className.includes&&e.target.className.includes('del-icon')) return; loadTopic(subj, topic); };
+                    var totalCards = totalCardsInTopic(subj, topic);
+                    var totalLessons = totalLessonsInTopic(subj, topic);
                     var stxt = document.createElement('span');
-                    stxt.innerHTML = sub + ' <span class="card-count">' + cardContent[subj][sub].length + '</span>';
+                    stxt.innerHTML = topic + ' <span class="card-count">'+totalLessons+' lessons</span>';
                     si.appendChild(stxt);
-                    var sdel = document.createElement('span'); sdel.className = 'del-icon'; sdel.textContent = '×';
-                    sdel.onclick = function(e){ e.stopPropagation(); deleteSub(subj, sub); };
+                    var sdel = document.createElement('span'); sdel.className='del-icon'; sdel.textContent='×';
+                    sdel.onclick = function(e){ e.stopPropagation(); deleteTopic(subj, topic); };
                     si.appendChild(sdel);
                     subList.appendChild(si);
-                })(sub);
+                })(topic);
             }
-            var addTopicBtn = document.createElement('div'); addTopicBtn.className = 'add-btn';
-            addTopicBtn.textContent = '+ Add Topic'; addTopicBtn.style.margin = '8px';
-            addTopicBtn.onclick = function(){ addNewSub(subj); };
+            var addTopicBtn = document.createElement('div'); addTopicBtn.className='add-btn';
+            addTopicBtn.textContent='+ Add Topic'; addTopicBtn.style.margin='8px';
+            addTopicBtn.onclick = function(){ addNewTopic(subj); };
             subList.appendChild(addTopicBtn);
             item.appendChild(subList); list.appendChild(item);
         })(subj);
     }
 }
 function toggleSubject(subj) {
-    var el = document.getElementById('sub-' + safeId(subj));
+    var el = document.getElementById('sub-'+safeId(subj));
     if (!el) return;
     el.classList.toggle('show'); el.parentElement.classList.toggle('expanded');
     saveSidebarState();
@@ -822,12 +738,12 @@ function saveSidebarState() {
 }
 function loadSidebarState() {
     try {
-        var saved = JSON.parse(localStorage.getItem('monoFlashSidebarState') || '[]');
+        var saved = JSON.parse(localStorage.getItem('monoFlashSidebarState')||'[]');
         saved.forEach(function(id){
-            var el = document.getElementById('sub-' + id);
-            if (el) { el.classList.add('show'); el.parentElement.classList.add('expanded'); }
+            var el = document.getElementById('sub-'+id);
+            if (el){ el.classList.add('show'); el.parentElement.classList.add('expanded'); }
         });
-    } catch(e) {}
+    } catch(e){}
 }
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
@@ -835,193 +751,306 @@ function toggleSidebar() {
 }
 function addNewSubject() {
     var name = prompt('New Subject name:');
-    if (name && name.trim()) { 
-        var t = name.trim(); 
-        if (!cardContent[t]) { 
-            cardContent[t] = {}; 
-            saveData(); 
-            renderSidebar(); 
-            loadSidebarState(); 
-            updateHomeStats();
-            renderHomeSubjects();
-        } 
+    if (name&&name.trim()) {
+        var t = name.trim();
+        if (!cardContent[t]){ cardContent[t]={}; saveData(); renderSidebar(); loadSidebarState(); updateHomeStats(); renderHomeSubjects(); }
     }
 }
-function addNewSub(subj) {
-    var name = prompt('New Topic name for "' + subj + '":');
-    if (name && name.trim()) { 
-        var t = name.trim(); 
-        if (!cardContent[subj][t]) { 
-            cardContent[subj][t] = []; 
-            saveData(); 
-            renderSidebar(); 
-            loadSidebarState(); 
-            updateHomeStats();
-            renderHomeSubjects();
-        } 
+function addNewTopic(subj) {
+    var name = prompt('New Topic name for "'+subj+'":');
+    if (name&&name.trim()) {
+        var t = name.trim();
+        if (!cardContent[subj][t]){ cardContent[subj][t]={lessons:{}}; saveData(); renderSidebar(); loadSidebarState(); updateHomeStats(); renderHomeSubjects(); }
     }
 }
 function deleteSubject(subj) {
-    if (!confirm('Delete subject "' + subj + '" and all its cards?')) return;
-    delete cardContent[subj]; delete srsData[subj];
-    if (currentSubject === subj) { currentSubject = null; currentSub = null; document.getElementById('header-title').textContent = 'Home'; }
-    saveData(); renderSidebar(); renderDbList(); updateHomeStats(); renderHomeSubjects();
+    if (!confirm('Delete subject "'+subj+'" and all its data?')) return;
+    delete cardContent[subj]; delete srsData[subj]; delete bookmarks[subj];
+    if (currentSubject===subj){ currentSubject=null; currentTopic=null; currentLesson=null; }
+    saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
+    if (!currentSubject) switchToHome();
 }
-function deleteSub(subj, sub) {
-    if (!confirm('Delete topic "' + sub + '" and all its cards?')) return;
-    delete cardContent[subj][sub];
-    if (srsData[subj]) delete srsData[subj][sub];
-    if (currentSubject === subj && currentSub === sub) { currentSub = null; document.getElementById('header-title').textContent = subj; renderCard(); }
-    saveData(); renderSidebar(); renderDbList(); updateHomeStats(); renderHomeSubjects();
-}
-
-// ── BOOKMARKS ──────────────────────────────────────────────────────────
-function toggleBookmark(e) {
-    e.stopPropagation(); // Don't flip card when clicking bookmark
-    if (!currentSubject || !currentSub || !shuffledCards.length || cardIndex >= shuffledCards.length) return;
-    
-    var cardIdx = shuffledCards[cardIndex]._index;
-    
-    // Initialize structure if needed
-    if (!bookmarks[currentSubject]) bookmarks[currentSubject] = {};
-    if (!bookmarks[currentSubject][currentSub]) bookmarks[currentSubject][currentSub] = [];
-    
-    var bookmarkList = bookmarks[currentSubject][currentSub];
-    var idx = bookmarkList.indexOf(cardIdx);
-    
-    if (idx > -1) {
-        // Remove bookmark
-        bookmarkList.splice(idx, 1);
-    } else {
-        // Add bookmark
-        bookmarkList.push(cardIdx);
-    }
-    
-    saveLocal();
-    updateBookmarkIcon();
-    renderContSel(); // Update counts
+function deleteTopic(subj, topic) {
+    if (!confirm('Delete topic "'+topic+'" and all its lessons/cards?')) return;
+    delete cardContent[subj][topic];
+    if (srsData[subj]) delete srsData[subj][topic];
+    if (bookmarks[subj]) delete bookmarks[subj][topic];
+    if (currentSubject===subj&&currentTopic===topic){ currentTopic=null; currentLesson=null; switchToHome(); }
+    saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
 }
 
-function updateBookmarkIcon() {
-    var icon = document.getElementById('bookmark-icon');
-    if (!currentSubject || !currentSub || !shuffledCards.length || cardIndex >= shuffledCards.length) {
-        icon.style.display = 'none';
-        return;
-    }
-    
-    icon.style.display = 'block';
-    var cardIdx = shuffledCards[cardIndex]._index;
-    var isBookmarked = bookmarks[currentSubject] && 
-                       bookmarks[currentSubject][currentSub] && 
-                       bookmarks[currentSubject][currentSub].indexOf(cardIdx) > -1;
-    
-    icon.textContent = isBookmarked ? '★' : '☆';
-    icon.className = isBookmarked ? 'bookmark-icon active' : 'bookmark-icon';
-}
-
-function getBookmarkCount() {
-    if (!currentSubject || !currentSub) return 0;
-    return (bookmarks[currentSubject] && bookmarks[currentSubject][currentSub]) ? 
-           bookmarks[currentSubject][currentSub].length : 0;
-}
-
-// ── FLASHCARDS ─────────────────────────────────────────────────────────
-function loadTopic(subj, sub) {
-    currentSubject = subj; currentSub = sub;
-    currentContainer = 'all'; reviewMissedMode = false; reviewBookmarksMode = false;
-    missedCardsThisSession.clear(); cardIndex = 0;
-    sessionStats = {total:0,correct:0};
-    document.getElementById('header-title').textContent = subj + ' › ' + sub;
+// ── LOAD TOPIC → shows Lessons screen ─────────────────────────────────
+function loadTopic(subj, topic) {
+    currentSubject = subj; currentTopic = topic; currentLesson = null;
+    cardIndex=0; sessionStats={total:0,correct:0};
+    missedCardsThisSession.clear();
     ensureSRS();
-    var cards = (cardContent[subj] && cardContent[subj][sub]) || [];
-    var srs   = (srsData[subj]    && srsData[subj][sub])    || [];
-    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i],_index:i}; });
-    dueCards = w.filter(function(c){ return isDue(c.srs); });
-    shuffledCards = shuffle(dueCards.length ? dueCards : w);
-    
-    // Show nav when topic is selected
+    document.getElementById('header-title').textContent = subj + ' › ' + topic;
+    document.getElementById('back-btn').classList.remove('show');
+    document.querySelector('nav').classList.remove('show');
+    document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
+    document.getElementById('tab-lessons').classList.add('active');
+    renderLessonsScreen();
+    // Update sidebar active state
+    document.querySelectorAll('.sub-item').forEach(function(el){ el.classList.remove('active'); });
+    toggleSidebar();
+}
+
+// ── LESSONS SCREEN ─────────────────────────────────────────────────────
+function renderLessonsScreen() {
+    var container = document.getElementById('tab-lessons');
+    container.innerHTML = '';
+    var lessons = getLessons(currentSubject, currentTopic);
+    var lessonNames = Object.keys(lessons);
+
+    var html = '<div style="padding:0;">';
+    html += '<div class="lessons-header" style="padding:20px 20px 0;">';
+    html += '<div class="lessons-title">'+escHtml(currentTopic)+'</div>';
+    html += '<div class="lessons-subtitle">'+lessonNames.length+' lesson'+(lessonNames.length!==1?'s':'')+' · '+totalCardsInTopic(currentSubject,currentTopic)+' cards total</div>';
+    html += '</div>';
+    html += '<div style="padding:12px 20px 0;">';
+
+    if (lessonNames.length === 0) {
+        html += '<div class="lessons-empty">';
+        html += '<div class="lessons-empty-icon">📖</div>';
+        html += '<div class="lessons-empty-text">No lessons yet.<br>Add lessons using the panel below or go to the Data tab.</div>';
+        html += '</div>';
+    } else {
+        lessonNames.forEach(function(ln) {
+            var cards = lessons[ln];
+            var srs = getLessonSRS(currentSubject, currentTopic, ln);
+            var dueCount = srs.filter(function(s){ return isDue(s); }).length;
+            var masteredCount = srs.filter(function(s){ return s.interval>=7; }).length;
+            var lastStudied = null;
+            srs.forEach(function(s){ if(s.lastReviewed&&(!lastStudied||s.lastReviewed>lastStudied)) lastStudied=s.lastReviewed; });
+            var reviewed = srs.filter(function(s){ return s.lastReviewed; }).length;
+            var pct = cards.length ? Math.round(reviewed/cards.length*100) : 0;
+            var lastStr = lastStudied ? formatRelativeTime(lastStudied) : 'Never studied';
+
+            html += '<div class="lesson-card" onclick="loadLesson(\''+escAttr(ln)+'\')">';
+            html += '<div class="lesson-card-inner">';
+            html += '<div class="lesson-card-top">';
+            html += '<div class="lesson-card-name">'+escHtml(ln)+'</div>';
+            html += '<span class="lesson-card-del" onclick="event.stopPropagation();deleteLesson(\''+escAttr(ln)+'\')" title="Delete lesson">×</span>';
+            html += '</div>';
+            html += '<div class="lesson-card-meta">';
+            html += '<div class="lesson-meta-item">🃏 <span>'+cards.length+' cards</span></div>';
+            html += '<div class="lesson-meta-item">🔔 <span>'+dueCount+' due</span></div>';
+            html += '<div class="lesson-meta-item">⭐ <span>'+masteredCount+' mastered</span></div>';
+            html += '<div class="lesson-meta-item">🕐 <span>'+lastStr+'</span></div>';
+            html += '</div>';
+            html += '<div class="lesson-progress-wrap"><div class="lesson-progress-bar" style="width:'+pct+'%"></div></div>';
+            html += '<div class="lesson-progress-pct">'+pct+'% reviewed</div>';
+            html += '</div>';
+            html += '</div>';
+        });
+    }
+
+    // Add lesson section
+    html += '<div class="lessons-add-section">';
+    html += '<div class="lessons-add-title">+ Add Lesson</div>';
+    html += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
+    html += '<input id="new-lesson-name" type="text" placeholder="Lesson name (e.g. Lesson 1)" style="flex:1;min-width:160px;background:var(--surface-el);color:#fff;border:1px solid var(--border-b);padding:10px 14px;border-radius:8px;font-size:.9rem;font-family:inherit;" onkeydown="if(event.key===\'Enter\')addLessonQuick()">';
+    html += '<button class="btn btn-primary" onclick="addLessonQuick()" style="padding:10px 20px;font-size:.85rem;white-space:nowrap;">Add</button>';
+    html += '</div>';
+    html += '<div style="font-size:.75rem;color:var(--dimmer);margin-bottom:8px;">Or go to the <strong style="color:var(--dim);">Data tab</strong> to import lessons + cards via text or JSON</div>';
+    html += '</div>';
+
+    html += '</div></div>';
+    container.innerHTML = html;
+}
+
+function addLessonQuick() {
+    var inp = document.getElementById('new-lesson-name');
+    if (!inp) return;
+    var name = inp.value.trim();
+    if (!name){ inp.focus(); return; }
+    if (!cardContent[currentSubject][currentTopic]) cardContent[currentSubject][currentTopic]={lessons:{}};
+    if (!cardContent[currentSubject][currentTopic].lessons) cardContent[currentSubject][currentTopic].lessons={};
+    if (cardContent[currentSubject][currentTopic].lessons[name]){ alert('Lesson already exists!'); return; }
+    cardContent[currentSubject][currentTopic].lessons[name] = [];
+    saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
+    renderLessonsScreen();
+}
+
+function deleteLesson(lessonName) {
+    if (!confirm('Delete lesson "'+lessonName+'" and all its cards?')) return;
+    delete cardContent[currentSubject][currentTopic].lessons[lessonName];
+    if (srsData[currentSubject]&&srsData[currentSubject][currentTopic]) delete srsData[currentSubject][currentTopic][lessonName];
+    if (bookmarks[currentSubject]&&bookmarks[currentSubject][currentTopic]) delete bookmarks[currentSubject][currentTopic][lessonName];
+    if (currentLesson===lessonName) { currentLesson=null; }
+    saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
+    renderLessonsScreen();
+}
+
+function loadLesson(lessonName) {
+    currentLesson = lessonName;
+    cardIndex=0; sessionStats={total:0,correct:0};
+    missedCardsThisSession.clear();
+    currentContainer='all'; reviewMissedMode=false; reviewBookmarksMode=false;
+
+    document.getElementById('header-title').textContent = currentLesson;
+    document.getElementById('back-btn').classList.add('show');
     document.querySelector('nav').classList.add('show');
-    
+
     // Switch to flashcard tab
     document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
     document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
     document.getElementById('tab-flashcard').classList.add('active');
-    var navItems = document.querySelectorAll('.nav-item');
-    if (navItems.length > 0) navItems[0].classList.add('active'); // Flashcard tab (1st item)
-    
-    renderCard(); updateStats(); renderDbList(); renderContSel();
-    document.querySelectorAll('.sub-item').forEach(function(el){ el.classList.remove('active'); });
-    if (event && event.target) { var si = event.target.closest('.sub-item'); if (si) si.classList.add('active'); }
-    toggleSidebar();
+    document.querySelectorAll('#main-nav .nav-item')[0].classList.add('active');
+
+    buildShuffledCards();
+    renderCard(); updateStats(); renderContSel(); renderDbList();
 }
+
+function goBackToLessons() {
+    currentLesson = null;
+    document.getElementById('back-btn').classList.remove('show');
+    document.querySelector('nav').classList.remove('show');
+    document.getElementById('header-title').textContent = currentSubject + ' › ' + currentTopic;
+    document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
+    document.getElementById('tab-lessons').classList.add('active');
+    renderLessonsScreen();
+}
+
+function buildShuffledCards() {
+    if (!currentSubject||!currentTopic||!currentLesson) { shuffledCards=[]; return; }
+    var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i]||createSRS(),_index:i}; });
+    dueCards = w.filter(function(c){ return isDue(c.srs); });
+    shuffledCards = shuffle(dueCards.length ? dueCards : w);
+}
+
+// ── BOOKMARKS ──────────────────────────────────────────────────────────
+function toggleBookmark(e) {
+    e.stopPropagation();
+    if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length) return;
+    var cardIdx = shuffledCards[cardIndex]._index;
+    var bmList = getLessonBookmarks(currentSubject, currentTopic, currentLesson);
+    var idx = bmList.indexOf(cardIdx);
+    if (idx>-1) bmList.splice(idx,1);
+    else bmList.push(cardIdx);
+    saveLocal();
+    updateBookmarkIcon();
+    renderContSel();
+}
+function updateBookmarkIcon() {
+    var icon = document.getElementById('bookmark-icon');
+    if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length){ icon.style.display='none'; return; }
+    icon.style.display='block';
+    var cardIdx = shuffledCards[cardIndex]._index;
+    var bmList = getLessonBookmarks(currentSubject, currentTopic, currentLesson);
+    var isBookmarked = bmList.indexOf(cardIdx)>-1;
+    icon.textContent = isBookmarked ? '★' : '☆';
+    icon.className = isBookmarked ? 'bookmark-icon active' : 'bookmark-icon';
+}
+function getBookmarkCount() {
+    if (!currentLesson) return 0;
+    return getLessonBookmarks(currentSubject, currentTopic, currentLesson).length;
+}
+
+// ── FLASHCARDS ─────────────────────────────────────────────────────────
 function renderCard() {
-    var front = document.getElementById('card-front'), back = document.getElementById('card-back');
+    var front=document.getElementById('card-front'), back=document.getElementById('card-back');
     document.getElementById('active-card').classList.remove('flipped');
-    
-    // Update progress bar
-    var progressWrap = document.getElementById('progress-wrap');
-    var progressBar = document.getElementById('progress-bar');
-    var progressText = document.getElementById('progress-text');
-    
-    if (!shuffledCards.length || cardIndex >= shuffledCards.length) {
-        front.textContent = currentSub ? 'No cards available' : 'Go to Home to select a topic';
-        back.textContent  = currentSub ? 'Add cards in the Data tab' : 'Browse your subjects';
-        progressWrap.style.display = 'none';
-        progressText.style.display = 'none';
-        document.getElementById('bookmark-icon').style.display = 'none';
+    var progressWrap=document.getElementById('progress-wrap');
+    var progressBar=document.getElementById('progress-bar');
+    var progressText=document.getElementById('progress-text');
+    if (!shuffledCards.length||cardIndex>=shuffledCards.length) {
+        front.textContent = currentLesson ? 'No cards in this lesson' : 'Select a topic to begin';
+        back.textContent  = currentLesson ? 'Add cards in the Data tab' : 'Browse your subjects';
+        progressWrap.style.display='none'; progressText.style.display='none';
+        document.getElementById('bookmark-icon').style.display='none';
         return;
     }
-    
-    // Show and update progress (start counting at 1)
-    if (shuffledCards.length > 0) {
-        progressWrap.style.display = 'block';
-        progressText.style.display = 'block';
-        var pct = (cardIndex / shuffledCards.length) * 100;
-        progressBar.style.width = pct + '%';
-        progressText.textContent = (cardIndex + 1) + ' / ' + shuffledCards.length;
-    }
-    
-    // Safely access current card
+    progressWrap.style.display='block'; progressText.style.display='block';
+    progressBar.style.width = (cardIndex/shuffledCards.length*100)+'%';
+    progressText.textContent = (cardIndex+1)+' / '+shuffledCards.length;
     if (!shuffledCards[cardIndex]) return;
     front.textContent = shuffledCards[cardIndex].q;
     back.textContent  = shuffledCards[cardIndex].a;
     updateBookmarkIcon();
 }
 function flipCard() {
-    if (!shuffledCards.length || cardIndex >= shuffledCards.length) return;
+    if (!shuffledCards.length||cardIndex>=shuffledCards.length) return;
     document.getElementById('active-card').classList.toggle('flipped');
 }
 function nextCard(quality) {
-    if (!currentSubject || !currentSub || !shuffledCards.length || cardIndex >= shuffledCards.length) return;
+    if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length) return;
     var cur = shuffledCards[cardIndex];
-    
-    // quality: false = missed (0), 'pass' = skip (no SRS update), true = got it (1)
-    if (quality !== 'pass') {
-        updateSRS(cur.srs, quality ? 1 : 0);
+    if (quality!=='pass') {
+        updateSRS(cur.srs, quality?1:0);
         if (!quality) missedCardsThisSession.add(cur._index);
+        // Write back to srsData
+        var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
+        srs[cur._index] = cur.srs;
         saveLocal();
-        sessionStats.total++; 
+        sessionStats.total++;
         if (quality) sessionStats.correct++;
     }
-    // Pass doesn't affect SRS or stats - just moves to next card
-    
-    updateStats(); renderContSel();
+    updateStats(); renderContSel(); renderLessonCardIfVisible();
     cardIndex++; renderCard();
 }
+
+function renderLessonCardIfVisible() {
+    // Refresh lessons screen progress if it's open (it won't be during flashcard mode, but just in case)
+}
+
 function updateStats() {
-    document.getElementById('stat-total').textContent = sessionStats.total;
-    var pct = sessionStats.total ? Math.round(sessionStats.correct / sessionStats.total * 100) : 0;
-    document.getElementById('stat-score').textContent = pct + '%';
-    if (currentSubject && currentSub && cardContent[currentSubject] && cardContent[currentSubject][currentSub]) {
-        var srs = (srsData[currentSubject] && srsData[currentSubject][currentSub]) || [];
-        document.getElementById('stat-due').textContent      = srs.filter(function(s){ return isDue(s); }).length;
-        document.getElementById('stat-mastered').textContent = srs.filter(function(s){ return s.interval >= 7; }).length;
-        renderContStats(cardContent[currentSubject][currentSub]);
+    var scopeLabel = document.getElementById('stat-scope-label');
+    if (currentLesson) {
+        if (scopeLabel) scopeLabel.textContent = currentSubject+' › '+currentTopic+' › '+currentLesson;
+        document.getElementById('stat-total').textContent = sessionStats.total;
+        var pct = sessionStats.total ? Math.round(sessionStats.correct/sessionStats.total*100) : 0;
+        document.getElementById('stat-score').textContent = pct+'%';
+        var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
+        document.getElementById('stat-due').textContent = srs.filter(function(s){ return isDue(s); }).length;
+        document.getElementById('stat-mastered').textContent = srs.filter(function(s){ return s.interval>=7; }).length;
+        var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+        renderContStats(cards);
+    } else if (currentTopic) {
+        if (scopeLabel) scopeLabel.textContent = currentSubject+' › '+currentTopic+' (all lessons)';
+        // Aggregate stats for whole topic
+        var lessons = getLessons(currentSubject, currentTopic);
+        var totalDue=0, totalMastered=0;
+        for (var ln in lessons) {
+            var s = getLessonSRS(currentSubject, currentTopic, ln);
+            totalDue += s.filter(function(x){ return isDue(x); }).length;
+            totalMastered += s.filter(function(x){ return x.interval>=7; }).length;
+        }
+        document.getElementById('stat-total').textContent = sessionStats.total;
+        var pct2 = sessionStats.total ? Math.round(sessionStats.correct/sessionStats.total*100) : 0;
+        document.getElementById('stat-score').textContent = pct2+'%';
+        document.getElementById('stat-due').textContent = totalDue;
+        document.getElementById('stat-mastered').textContent = totalMastered;
+        renderLessonStats();
     } else {
+        if (scopeLabel) scopeLabel.textContent = 'All Topics';
+        document.getElementById('stat-total').textContent = '-';
+        document.getElementById('stat-score').textContent = '-';
         document.getElementById('stat-due').textContent = '-';
         document.getElementById('stat-mastered').textContent = '-';
         document.getElementById('container-stats').innerHTML = '';
     }
+}
+
+function renderLessonStats() {
+    var wrap = document.getElementById('container-stats');
+    if (!currentTopic) { wrap.innerHTML=''; return; }
+    var lessons = getLessons(currentSubject, currentTopic);
+    var lessonNames = Object.keys(lessons);
+    if (!lessonNames.length) { wrap.innerHTML=''; return; }
+    var html = '<h3 class="db-sec-title" style="margin-bottom:16px;">Per Lesson</h3>';
+    lessonNames.forEach(function(ln) {
+        var srs = getLessonSRS(currentSubject, currentTopic, ln);
+        var cards = lessons[ln];
+        var due = srs.filter(function(s){ return isDue(s); }).length;
+        var mastered = srs.filter(function(s){ return s.interval>=7; }).length;
+        html += '<div class="cont-stat"><div class="cont-stat-h">'+escHtml(ln)+' ('+cards.length+' cards)</div>';
+        html += '<div class="cont-stat-d">'+due+' due today · '+mastered+' mastered</div></div>';
+    });
+    wrap.innerHTML = html;
 }
 
 // ── CONTAINERS ─────────────────────────────────────────────────────────
@@ -1029,752 +1058,487 @@ function renderContSel() {
     var wrap = document.getElementById('cont-selector');
     var buttons = document.getElementById('cont-buttons');
     var info = document.getElementById('cont-info');
-    
-    if (!currentSubject || !currentSub || !(cardContent[currentSubject] && cardContent[currentSubject][currentSub])) { 
-        wrap.style.display='none'; 
-        return; 
-    }
-    
-    var all = cardContent[currentSubject][currentSub];
-    var num = Math.ceil(all.length / CARDS_PER_CONTAINER);
-    
-    if (all.length <= CARDS_PER_CONTAINER && missedCardsThisSession.size === 0 && getBookmarkCount() === 0) { 
-        wrap.style.display='none'; 
-        return; 
-    }
-    
-    wrap.style.display = 'flex';
-    buttons.innerHTML = '';
-    
-    // Bookmarks button (golden) - FIRST
-    var bookmarkBtn = mkCBtn('Bookmarks (' + getBookmarkCount() + ')', reviewBookmarksMode, function(){ toggleReviewBookmarks(); });
-    bookmarkBtn.classList.add('bookmarks');
-    buttons.appendChild(bookmarkBtn);
-    
-    // Missed button (red) - SECOND
-    var missedBtn = mkCBtn('Missed (' + missedCardsThisSession.size + ')', reviewMissedMode, function(){ toggleReviewMissed(); });
-    missedBtn.classList.add('missed');
-    buttons.appendChild(missedBtn);
-    
-    // All button - THIRD
-    buttons.appendChild(mkCBtn('All', currentContainer === 'all' && !reviewMissedMode && !reviewBookmarksMode, function(){ selectContainer('all'); }));
-    
-    // Container buttons
-    for (var i = 0; i < num; i++) {
+    if (!currentLesson) { wrap.style.display='none'; return; }
+    var all = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var num = Math.ceil(all.length/CARDS_PER_CONTAINER);
+    if (all.length<=CARDS_PER_CONTAINER&&missedCardsThisSession.size===0&&getBookmarkCount()===0){ wrap.style.display='none'; return; }
+    wrap.style.display='flex'; buttons.innerHTML='';
+    var bmBtn = mkCBtn('Bookmarks ('+getBookmarkCount()+')', reviewBookmarksMode, function(){ toggleReviewBookmarks(); });
+    bmBtn.classList.add('bookmarks'); buttons.appendChild(bmBtn);
+    var msBtn = mkCBtn('Missed ('+missedCardsThisSession.size+')', reviewMissedMode, function(){ toggleReviewMissed(); });
+    msBtn.classList.add('missed'); buttons.appendChild(msBtn);
+    buttons.appendChild(mkCBtn('All', currentContainer==='all'&&!reviewMissedMode&&!reviewBookmarksMode, function(){ selectContainer('all'); }));
+    for (var i=0; i<num; i++) {
         (function(i){
-            var s0 = i * CARDS_PER_CONTAINER, e0 = Math.min(s0 + CARDS_PER_CONTAINER, all.length);
-            buttons.appendChild(mkCBtn('C'+(i+1)+' ('+(e0-s0)+')', currentContainer === i && !reviewMissedMode && !reviewBookmarksMode, function(){ selectContainer(i); }));
+            var s0=i*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,all.length);
+            buttons.appendChild(mkCBtn('C'+(i+1)+' ('+(e0-s0)+')', currentContainer===i&&!reviewMissedMode&&!reviewBookmarksMode, function(){ selectContainer(i); }));
         })(i);
     }
-    
-    info.textContent = all.length + ' total cards · ' + CARDS_PER_CONTAINER + ' per container';
+    info.textContent = all.length+' cards · '+CARDS_PER_CONTAINER+' per container';
 }
-
-function toggleContainerCollapse() {
-    document.getElementById('cont-selector').classList.toggle('collapsed');
-}
+function toggleContainerCollapse() { document.getElementById('cont-selector').classList.toggle('collapsed'); }
 function mkCBtn(label, active, fn) {
-    var b = document.createElement('button'); b.className = 'cont-btn' + (active ? ' active' : '');
-    b.textContent = label; b.onclick = fn; return b;
+    var b=document.createElement('button'); b.className='cont-btn'+(active?' active':'');
+    b.textContent=label; b.onclick=fn; return b;
 }
 function selectContainer(id) {
-    currentContainer = id; reviewMissedMode = false; reviewBookmarksMode = false; cardIndex = 0;
-    if (!currentSubject || !currentSub || !(cardContent[currentSubject] && cardContent[currentSubject][currentSub])) return;
-    var cards = cardContent[currentSubject][currentSub];
-    var srs   = srsData[currentSubject][currentSub];
-    if (id === 'all') {
-        var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i],_index:i}; });
+    currentContainer=id; reviewMissedMode=false; reviewBookmarksMode=false; cardIndex=0;
+    if (!currentLesson) return;
+    var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    if (id==='all') {
+        var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i]||createSRS(),_index:i}; });
         var due = w.filter(function(c){ return isDue(c.srs); });
-        shuffledCards = shuffle(due.length ? due : w);
+        shuffledCards = shuffle(due.length?due:w);
     } else {
-        var s0 = id * CARDS_PER_CONTAINER, e0 = Math.min(s0 + CARDS_PER_CONTAINER, cards.length);
-        var w2 = cards.slice(s0, e0).map(function(c,i){ return {q:c.q,a:c.a,srs:srs[s0+i],_index:s0+i}; });
-        var due2 = w2.filter(function(c){ return isDue(c.srs); });
-        shuffledCards = shuffle(due2.length ? due2 : w2);
+        var s0=id*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,cards.length);
+        var w2=cards.slice(s0,e0).map(function(c,i){ return {q:c.q,a:c.a,srs:srs[s0+i]||createSRS(),_index:s0+i}; });
+        var due2=w2.filter(function(c){ return isDue(c.srs); });
+        shuffledCards=shuffle(due2.length?due2:w2);
     }
     renderCard(); renderContSel();
 }
 function toggleReviewMissed() {
-    if (!missedCardsThisSession.size) { alert('No missed cards yet!'); return; }
-    reviewMissedMode = !reviewMissedMode; reviewBookmarksMode = false; cardIndex = 0;
+    if (!missedCardsThisSession.size){ alert('No missed cards yet!'); return; }
+    reviewMissedMode=!reviewMissedMode; reviewBookmarksMode=false; cardIndex=0;
     if (reviewMissedMode) {
-        var cards = cardContent[currentSubject][currentSub];
-        var srs   = srsData[currentSubject][currentSub];
-        shuffledCards = shuffle(Array.from(missedCardsThisSession)
-            .map(function(i){ return {q:cards[i].q,a:cards[i].a,srs:srs[i],_index:i}; })
-            .filter(function(c){ return c.q; }));
+        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
+        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
+        shuffledCards=shuffle(Array.from(missedCardsThisSession).map(function(i){ return {q:cards[i].q,a:cards[i].a,srs:srs[i]||createSRS(),_index:i}; }).filter(function(c){ return c.q; }));
     } else { selectContainer(currentContainer); }
     renderCard(); renderContSel();
 }
 function toggleReviewBookmarks() {
-    var count = getBookmarkCount();
-    if (!count) { alert('No bookmarked cards yet!'); return; }
-    reviewBookmarksMode = !reviewBookmarksMode; reviewMissedMode = false; cardIndex = 0;
+    if (!getBookmarkCount()){ alert('No bookmarked cards yet!'); return; }
+    reviewBookmarksMode=!reviewBookmarksMode; reviewMissedMode=false; cardIndex=0;
     if (reviewBookmarksMode) {
-        var cards = cardContent[currentSubject][currentSub];
-        var srs   = srsData[currentSubject][currentSub];
-        var bookmarkedIndices = bookmarks[currentSubject][currentSub] || [];
-        shuffledCards = shuffle(bookmarkedIndices
-            .map(function(i){ return {q:cards[i].q,a:cards[i].a,srs:srs[i],_index:i}; })
-            .filter(function(c){ return c.q; }));
+        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
+        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
+        var bmIdxs=getLessonBookmarks(currentSubject,currentTopic,currentLesson);
+        shuffledCards=shuffle(bmIdxs.map(function(i){ return {q:cards[i].q,a:cards[i].a,srs:srs[i]||createSRS(),_index:i}; }).filter(function(c){ return c.q; }));
     } else { selectContainer(currentContainer); }
     renderCard(); renderContSel();
 }
 function renderContStats(allCards) {
-    var wrap = document.getElementById('container-stats');
-    var num = Math.ceil(allCards.length / CARDS_PER_CONTAINER);
-    if (num <= 1) { wrap.innerHTML = ''; return; }
-    wrap.innerHTML = '<h3 class="db-sec-title" style="margin-bottom:16px;">Container Breakdown</h3>';
-    for (var i = 0; i < num; i++) {
-        var s0 = i * CARDS_PER_CONTAINER, e0 = Math.min(s0 + CARDS_PER_CONTAINER, allCards.length);
-        var csrs = srsData[currentSubject][currentSub].slice(s0, e0);
-        var box = document.createElement('div'); box.className = 'cont-stat';
-        box.innerHTML = '<div class="cont-stat-h">Container '+(i+1)+' ('+(e0-s0)+' cards)</div>' +
-            '<div class="cont-stat-d">' + csrs.filter(function(s){ return s.interval>=7; }).length + ' mastered · ' +
-            csrs.filter(function(s){ return isDue(s); }).length + ' due today</div>';
+    var wrap=document.getElementById('container-stats');
+    var num=Math.ceil(allCards.length/CARDS_PER_CONTAINER);
+    if (num<=1||!currentLesson){ if(!currentLesson) renderLessonStats(); return; }
+    var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
+    wrap.innerHTML='<h3 class="db-sec-title" style="margin-bottom:16px;">Container Breakdown</h3>';
+    for (var i=0;i<num;i++){
+        var s0=i*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,allCards.length);
+        var csrs=srs.slice(s0,e0);
+        var box=document.createElement('div'); box.className='cont-stat';
+        box.innerHTML='<div class="cont-stat-h">Container '+(i+1)+' ('+(e0-s0)+' cards)</div>'+
+            '<div class="cont-stat-d">'+csrs.filter(function(s){ return s.interval>=7; }).length+' mastered · '+
+            csrs.filter(function(s){ return isDue(s); }).length+' due today</div>';
         wrap.appendChild(box);
     }
 }
 
-// ── DATABASE ───────────────────────────────────────────────────────────
-function parseText(text) {
-    return text.split('\n').filter(function(l){ return l.includes('-!-'); }).map(function(l){
-        var p = l.split('-!-'); return p.length >= 2 ? {q:p[0].trim(), a:p.slice(1).join('-!-').trim()} : null;
-    }).filter(function(c){ return c && c.q && c.a; });
-}
-function validCards(arr) { return Array.isArray(arr) && arr.every(function(c){ return c && typeof c.q==='string' && typeof c.a==='string'; }); }
-
-function importJson() {
-    if (!currentSubject || !currentSub) { alert('Select a Subject and Topic first.'); return; }
-    var raw = document.getElementById('json-input').value.trim();
-    if (!raw) { alert('Enter some data first.'); return; }
-    var cards = [];
-    if (raw.includes('-!-')) { cards = parseText(raw); }
-    else { try { cards = JSON.parse(raw); if (!validCards(cards)) throw 0; } catch { alert('Invalid format.'); return; } }
-    if (!cards.length) { alert('No valid cards found.'); return; }
-    doAddCards(cards);
-    document.getElementById('json-input').value = '';
-}
-function importJsonFile(e) {
-    if (!currentSubject || !currentSub) { alert('Select a Subject and Topic first.'); e.target.value=''; return; }
-    var file = e.target.files && e.target.files[0]; if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-        try { var p = JSON.parse(ev.target.result); if (!validCards(p)) throw 0; doAddCards(p); }
-        catch { alert('Unable to parse file.'); }
-        e.target.value = '';
-    };
-    reader.readAsText(file);
-}
-function doAddCards(newCards) {
-    if (!cardContent[currentSubject][currentSub]) cardContent[currentSubject][currentSub] = [];
-    var existing = cardContent[currentSubject][currentSub];
-    var added = 0, dupes = 0;
-    newCards.forEach(function(c) {
-        if (existing.some(function(e){ return e.q.trim().toLowerCase() === c.q.trim().toLowerCase(); })) { dupes++; }
-        else { existing.push(c); added++; }
-    });
-    ensureSRS(); saveData(); renderDbList(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
-    var cards = cardContent[currentSubject][currentSub];
-    var srs   = srsData[currentSubject][currentSub];
-    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i],_index:i}; });
-    dueCards = w.filter(function(c){ return isDue(c.srs); });
-    shuffledCards = shuffle(dueCards.length ? dueCards : w);
-    renderCard();
-    alert('Added ' + added + ' card' + (added!==1?'s':'') + '!' + (dupes ? '\n' + dupes + ' duplicate' + (dupes!==1?'s':'') + ' skipped.' : ''));
-}
-function exportJson() {
-    if (!currentSubject || !currentSub) { alert('Select a Subject and Topic first.'); return; }
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(cardContent[currentSubject][currentSub],null,2)],{type:'application/json'}));
-    a.download = safeId(currentSubject) + '-' + safeId(currentSub) + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-}
-function exportFullBackup() {
-    var total = 0;
-    for (var s in cardContent) for (var t in cardContent[s]) total += cardContent[s][t].length;
-    var backup = {version:1, exportDate:new Date().toISOString(), deviceId:DEVICE_ID, cardContent:cardContent, metadata:{totalSubjects:Object.keys(cardContent).length, totalCards:total}};
-    var ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
-    a.download = 'MonoFlash-Backup-' + ts + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    alert('✅ Backup created!\n\n' + backup.metadata.totalSubjects + ' subjects\n' + backup.metadata.totalCards + ' total cards');
-}
-function importFullBackup(e) {
-    var file = e.target.files && e.target.files[0]; if (!file) return;
-    if (!confirm('⚠️ This will REPLACE all your current data. Continue?')) { e.target.value=''; return; }
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-        try {
-            var b = JSON.parse(ev.target.result);
-            if (!b.cardContent || typeof b.cardContent !== 'object') throw new Error('Invalid backup');
-            var total = 0;
-            for (var s in b.cardContent) for (var t in b.cardContent[s]) total += b.cardContent[s][t].length;
-            if (!confirm('📦 Ready to import:\n✓ ' + Object.keys(b.cardContent).length + ' subjects\n✓ ' + total + ' cards\n\nProceed?')) { e.target.value=''; return; }
-            cardContent = b.cardContent; srsData = {};
-            ensureSRS(); saveData();
-            renderSidebar(); loadSidebarState(); renderDbList(); updateHomeStats(); renderHomeSubjects();
-            currentSubject = null; currentSub = null;
-            document.getElementById('header-title').textContent = 'Home';
-            renderCard();
-            alert('✅ Imported! Syncing to cloud…');
-        } catch(err) { alert('❌ Failed: ' + err.message); }
-        e.target.value = '';
-    };
-    reader.readAsText(file);
-}
+// ── DATABASE TAB ───────────────────────────────────────────────────────
 function renderDbList() {
-    var list = document.getElementById('db-list'); list.innerHTML = '';
-    if (!currentSubject || !currentSub || !(cardContent[currentSubject] && cardContent[currentSubject][currentSub])) return;
-    cardContent[currentSubject][currentSub].forEach(function(c, i) {
-        var item = document.createElement('div'); 
-        item.className = 'db-item';
-        item.id = 'db-item-' + i;
-        
-        var content = document.createElement('div'); 
-        content.className = 'db-item-content';
-        content.innerHTML = '<div class="db-key">' + c.q + '</div><div class="db-val">' + c.a + '</div>';
-        
-        var actions = document.createElement('div');
-        actions.className = 'db-item-actions';
-        
-        var editBtn = document.createElement('button'); 
-        editBtn.className = 'btn db-btn-edit';
-        editBtn.style.cssText = 'padding:6px 12px;font-size:.75rem;';
-        editBtn.textContent = '✏️ Edit';
-        editBtn.onclick = (function(idx){ return function(){ editCard(idx); }; })(i);
-        
-        var delBtn = document.createElement('button'); 
-        delBtn.className = 'btn db-btn-delete';
-        delBtn.style.cssText = 'padding:6px 12px;font-size:.75rem;';
-        delBtn.textContent = 'Delete';
-        delBtn.onclick = (function(idx){ return function(){ deleteCard(idx); }; })(i);
-        
-        actions.appendChild(editBtn);
-        actions.appendChild(delBtn);
-        item.appendChild(content); 
-        item.appendChild(actions); 
-        list.appendChild(item);
-    });
-}
-function editCard(idx) {
-    var item = document.getElementById('db-item-' + idx);
-    if (!item) return;
-    
-    var card = cardContent[currentSubject][currentSub][idx];
-    
-    // Create edit interface
-    var editDiv = document.createElement('div');
-    editDiv.className = 'db-item-edit';
-    
-    var inputsDiv = document.createElement('div');
-    inputsDiv.className = 'db-edit-inputs';
-    
-    var qInput = document.createElement('input');
-    qInput.className = 'db-edit-input';
-    qInput.value = card.q;
-    qInput.placeholder = 'Question';
-    
-    var aInput = document.createElement('input');
-    aInput.className = 'db-edit-input';
-    aInput.value = card.a;
-    aInput.placeholder = 'Answer';
-    
-    inputsDiv.appendChild(qInput);
-    inputsDiv.appendChild(aInput);
-    
-    var actions = document.createElement('div');
-    actions.className = 'db-item-actions';
-    
-    var saveBtn = document.createElement('button');
-    saveBtn.className = 'btn';
-    saveBtn.style.cssText = 'padding:6px 12px;font-size:.75rem;background:var(--ok);border-color:var(--ok);';
-    saveBtn.textContent = '💾 Save';
-    saveBtn.onclick = function() {
-        var newQ = qInput.value.trim();
-        var newA = aInput.value.trim();
-        if (!newQ || !newA) { alert('Question and Answer cannot be empty'); return; }
-        cardContent[currentSubject][currentSub][idx] = {q: newQ, a: newA};
-        saveData();
-        renderDbList();
-        // Update current card if it's being displayed
-        if (shuffledCards[cardIndex] && shuffledCards[cardIndex]._index === idx) {
-            shuffledCards[cardIndex].q = newQ;
-            shuffledCards[cardIndex].a = newA;
-            renderCard();
-        }
-    };
-    
-    var cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn';
-    cancelBtn.style.cssText = 'padding:6px 12px;font-size:.75rem;';
-    cancelBtn.textContent = '✕ Cancel';
-    cancelBtn.onclick = function() { renderDbList(); };
-    
-    actions.appendChild(saveBtn);
-    actions.appendChild(cancelBtn);
-    editDiv.appendChild(inputsDiv);
-    editDiv.appendChild(actions);
-    
-    // Replace content
-    item.innerHTML = '';
-    item.appendChild(editDiv);
-    qInput.focus();
+    var wrap = document.getElementById('db-content');
+    if (!wrap) return;
+
+    if (!currentSubject||!currentTopic) {
+        wrap.innerHTML = '<p style="color:var(--dimmer);text-align:center;padding:40px 20px;">Select a topic from the sidebar first.</p>';
+        return;
+    }
+
+    var lessons = getLessons(currentSubject, currentTopic);
+    var lessonNames = Object.keys(lessons);
+    var scopeNote = currentLesson ? ' › '+currentLesson : ' (all lessons)';
+
+    var html = '';
+    html += '<h3 class="db-sec-title">Import Data</h3>';
+    html += '<p class="db-sub">';
+    html += '<strong>Format 1 — Lesson blocks:</strong><br>';
+    html += '##Lesson Name<br>Question -!- Answer<br>Next question -!- Answer<br><br>';
+    html += '<strong>Format 2 — JSON:</strong><br>';
+    html += '[{"name":"Lesson 1","cards":[{"q":"Q","a":"A"}]}]<br><br>';
+    html += '<strong>Format 3 — Plain (adds to '+escHtml(currentLesson||'selected lesson')+'):</strong><br>';
+    html += 'Question -!- Answer';
+    html += '</p>';
+
+    html += '<textarea id="json-input" placeholder="##Lesson 1&#10;What is gravity? -!- Force that attracts objects&#10;What is speed? -!- Distance over time&#10;&#10;##Lesson 2&#10;What is mass? -!- Amount of matter"></textarea>';
+    html += '<input id="file-input" type="file" accept=".json" style="display:none" onchange="importJsonFile(event)">';
+    html += '<div class="db-btn-group">';
+    html += '<button class="btn btn-primary" onclick="importData()">Import</button>';
+    html += '<button class="btn" onclick="document.getElementById(\'file-input\').click()">Import File</button>';
+    html += '</div>';
+
+    // Per-lesson cards
+    if (currentLesson) {
+        var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+        html += '<div class="db-list-head"><h3>'+escHtml(currentLesson)+' Cards ('+cards.length+')</h3>';
+        html += '<button class="btn" onclick="clearAllCards()" style="padding:8px 16px;font-size:.75rem;">Clear Lesson</button></div>';
+        html += '<div id="db-list">';
+        cards.forEach(function(c,i) {
+            html += '<div class="db-item" id="db-item-'+i+'">';
+            html += '<div class="db-item-content"><div class="db-key">'+escHtml(c.q)+'</div><div class="db-val">'+escHtml(c.a)+'</div></div>';
+            html += '<div class="db-item-actions">';
+            html += '<button class="btn db-btn-edit" style="padding:6px 12px;font-size:.75rem;" onclick="editCard('+i+')">✏️</button>';
+            html += '<button class="btn db-btn-delete" style="padding:6px 12px;font-size:.75rem;" onclick="deleteCard('+i+')">Del</button>';
+            html += '</div></div>';
+        });
+        html += '</div>';
+    } else if (lessonNames.length > 0) {
+        // Show all lessons' cards
+        html += '<div class="db-list-head"><h3>All Lessons</h3></div>';
+        lessonNames.forEach(function(ln) {
+            var cards = lessons[ln];
+            html += '<div style="margin-bottom:24px;">';
+            html += '<div class="db-lesson-badge">'+escHtml(ln)+' · '+cards.length+' cards</div>';
+            if (cards.length === 0) {
+                html += '<div style="color:var(--dimmer);font-size:.85rem;padding:8px 0;">No cards yet</div>';
+            }
+            cards.forEach(function(c,i){
+                html += '<div class="db-item">';
+                html += '<div class="db-item-content"><div class="db-key">'+escHtml(c.q)+'</div><div class="db-val">'+escHtml(c.a)+'</div></div>';
+                html += '<div class="db-item-actions">';
+                html += '<button class="btn db-btn-delete" style="padding:6px 12px;font-size:.75rem;" onclick="deleteCardFromLesson(\''+escAttr(ln)+'\','+i+')">Del</button>';
+                html += '</div></div>';
+            });
+            html += '</div>';
+        });
+    }
+
+    // Export section
+    html += '<div style="margin-top:24px;border-top:1px solid var(--border-b);padding-top:20px;">';
+    html += '<div class="db-sec-title" style="font-size:.9rem;">Export</div>';
+    html += '<div class="db-btn-group" style="margin-bottom:0;">';
+    html += '<button class="btn" onclick="exportTopicJson()" style="font-size:.8rem;padding:10px;">Export Topic JSON</button>';
+    html += '<button class="btn" onclick="exportFullBackup()" style="font-size:.8rem;padding:10px;">Export ALL Data</button>';
+    html += '</div></div>';
+
+    wrap.innerHTML = html;
 }
 
+// ── IMPORT ──────────────────────────────────────────────────────────────
+function parseBlockFormat(text) {
+    // ##Lesson Name\nQ -!- A\nQ -!- A\n\n##Lesson 2\n...
+    var result = {}; // lessonName -> [{q,a}]
+    var currentLessonName = null;
+    var lines = text.split('\n');
+    lines.forEach(function(line) {
+        var trimmed = line.trim();
+        if (trimmed.startsWith('##')) {
+            currentLessonName = trimmed.slice(2).trim();
+            if (!result[currentLessonName]) result[currentLessonName] = [];
+        } else if (trimmed.includes('-!-') && currentLessonName) {
+            var parts = trimmed.split('-!-');
+            if (parts.length>=2) {
+                var q=parts[0].trim(), a=parts.slice(1).join('-!-').trim();
+                if (q&&a) result[currentLessonName].push({q,a});
+            }
+        } else if (trimmed.includes('-!-') && !currentLessonName) {
+            // No lesson header yet — use default
+            if (!result['Lesson 1']) result['Lesson 1'] = [];
+            var parts2 = trimmed.split('-!-');
+            if (parts2.length>=2) {
+                var q2=parts2[0].trim(), a2=parts2.slice(1).join('-!-').trim();
+                if (q2&&a2) result['Lesson 1'].push({q:q2,a:a2});
+            }
+        }
+    });
+    return result;
+}
+
+function importData() {
+    if (!currentSubject||!currentTopic){ alert('Select a Topic first.'); return; }
+    var raw = document.getElementById('json-input').value.trim();
+    if (!raw){ alert('Enter some data first.'); return; }
+
+    var lessonMap = null;
+
+    // Try JSON first
+    if (raw.trim().startsWith('[')) {
+        try {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed[0] && parsed[0].name && parsed[0].cards) {
+                // [{name, cards:[{q,a}]}]
+                lessonMap = {};
+                parsed.forEach(function(l){ lessonMap[l.name] = l.cards||[]; });
+            } else if (Array.isArray(parsed) && parsed[0] && parsed[0].q) {
+                // Old flat format [{q,a}] → add to current lesson or Lesson 1
+                var target = currentLesson || 'Lesson 1';
+                lessonMap = {}; lessonMap[target] = parsed;
+            }
+        } catch(e) {}
+    }
+
+    // Try block text format
+    if (!lessonMap) {
+        lessonMap = parseBlockFormat(raw);
+    }
+
+    if (!lessonMap || Object.keys(lessonMap).length === 0) {
+        alert('No valid data found. Check the format.'); return;
+    }
+
+    // If only plain cards (no ## headers) and we have a current lesson, force into that lesson
+    if (Object.keys(lessonMap).length===1 && lessonMap['Lesson 1'] && currentLesson) {
+        var temp = {}; temp[currentLesson] = lessonMap['Lesson 1'];
+        lessonMap = temp;
+    }
+
+    if (!cardContent[currentSubject][currentTopic]) cardContent[currentSubject][currentTopic]={lessons:{}};
+    if (!cardContent[currentSubject][currentTopic].lessons) cardContent[currentSubject][currentTopic].lessons={};
+
+    var totalAdded=0, totalDupes=0;
+    for (var ln in lessonMap) {
+        if (!cardContent[currentSubject][currentTopic].lessons[ln]) cardContent[currentSubject][currentTopic].lessons[ln]=[];
+        var existing = cardContent[currentSubject][currentTopic].lessons[ln];
+        lessonMap[ln].forEach(function(c) {
+            if (existing.some(function(e){ return e.q.trim().toLowerCase()===c.q.trim().toLowerCase(); })) totalDupes++;
+            else { existing.push(c); totalAdded++; }
+        });
+    }
+
+    ensureSRS(); saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
+    renderLessonsScreen();
+    renderDbList();
+    document.getElementById('json-input').value='';
+
+    // If we added to current lesson, rebuild cards
+    if (currentLesson) { buildShuffledCards(); renderCard(); }
+
+    alert('Added '+totalAdded+' card'+(totalAdded!==1?'s':'')+' across '+Object.keys(lessonMap).length+' lesson'+(Object.keys(lessonMap).length!==1?'s':'')+'!'+(totalDupes?' ('+totalDupes+' dupes skipped)':''));
+}
+
+function importJsonFile(e) {
+    if (!currentSubject||!currentTopic){ alert('Select a Topic first.'); e.target.value=''; return; }
+    var file=e.target.files&&e.target.files[0]; if(!file) return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+        document.getElementById('json-input').value=ev.target.result;
+        importData();
+        e.target.value='';
+    };
+    reader.readAsText(file);
+}
+
+function editCard(idx) {
+    if (!currentLesson) return;
+    var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var card = cards[idx];
+    var newQ = prompt('Edit Question:', card.q);
+    if (newQ===null) return;
+    var newA = prompt('Edit Answer:', card.a);
+    if (newA===null) return;
+    newQ=newQ.trim(); newA=newA.trim();
+    if (!newQ||!newA){ alert('Cannot be empty.'); return; }
+    cards[idx]={q:newQ,a:newA};
+    saveData();
+    if (shuffledCards[cardIndex]&&shuffledCards[cardIndex]._index===idx){ shuffledCards[cardIndex].q=newQ; shuffledCards[cardIndex].a=newA; renderCard(); }
+    renderDbList();
+}
 function deleteCard(idx) {
-    if (!confirm('Delete this card?')) return;
-    cardContent[currentSubject][currentSub].splice(idx,1);
-    if (srsData[currentSubject] && srsData[currentSubject][currentSub]) srsData[currentSubject][currentSub].splice(idx,1);
+    if (!currentLesson||!confirm('Delete this card?')) return;
+    var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    cards.splice(idx,1); srs.splice(idx,1);
     saveData(); renderDbList(); renderSidebar();
-    var cards = cardContent[currentSubject][currentSub];
-    var srs   = srsData[currentSubject][currentSub];
-    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,srs:srs[i],_index:i}; });
-    shuffledCards = shuffle(w.filter(function(c){ return isDue(c.srs); }).length ? w.filter(function(c){ return isDue(c.srs); }) : w);
-    renderCard();
+    buildShuffledCards(); renderCard();
+}
+function deleteCardFromLesson(lessonName, idx) {
+    if (!confirm('Delete this card?')) return;
+    var cards = getLessonCards(currentSubject, currentTopic, lessonName);
+    var srs   = getLessonSRS(currentSubject, currentTopic, lessonName);
+    cards.splice(idx,1); srs.splice(idx,1);
+    saveData(); renderDbList(); renderSidebar();
 }
 function clearAllCards() {
-    if (!currentSubject || !currentSub) { alert('Select a subject and topic first.'); return; }
-    if (!confirm('Clear ALL cards in ' + currentSubject + ' > ' + currentSub + '?')) return;
-    cardContent[currentSubject][currentSub] = [];
-    if (srsData[currentSubject]) srsData[currentSubject][currentSub] = [];
-    saveData(); renderDbList(); renderSidebar(); shuffledCards = []; renderCard();
+    if (!currentLesson){ alert('Select a lesson first.'); return; }
+    if (!confirm('Clear ALL cards in "'+currentLesson+'"?')) return;
+    cardContent[currentSubject][currentTopic].lessons[currentLesson]=[];
+    if (srsData[currentSubject]&&srsData[currentSubject][currentTopic]) srsData[currentSubject][currentTopic][currentLesson]=[];
+    saveData(); renderDbList(); shuffledCards=[]; renderCard();
+}
+function exportTopicJson() {
+    if (!currentSubject||!currentTopic){ alert('Select a Topic first.'); return; }
+    var lessons = getLessons(currentSubject, currentTopic);
+    var data = Object.keys(lessons).map(function(ln){ return {name:ln,cards:lessons[ln]}; });
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    a.download=safeId(currentSubject)+'-'+safeId(currentTopic)+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
 }
 
 // ── TABS ───────────────────────────────────────────────────────────────
 function switchTab(name, el) {
     document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
-    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('#main-nav .nav-item').forEach(function(n){ n.classList.remove('active'); });
+    document.getElementById('tab-'+name).classList.add('active');
     el.classList.add('active');
-    
-    if (name === 'home') {
-        switchToHome();
-    } else {
-        // Show nav for other tabs
-        document.querySelector('nav').classList.add('show');
-        if (name === 'flashcard') {
-            document.getElementById('header-title').textContent = currentSubject && currentSub ? currentSubject + ' › ' + currentSub : 'Select a Subject';
-        } else if (name === 'performance') {
-            updateStats();
-        } else if (name === 'database') {
-            renderDbList();
-        }
-    }
+    if (name==='performance') updateStats();
+    else if (name==='database') renderDbList();
+    else if (name==='flashcard') renderCard();
 }
 
-// ── UTILS ──────────────────────────────────────────────────────────────
-function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length-1; i > 0; i--) { var j = Math.floor(Math.random()*(i+1)); var tmp=a[i]; a[i]=a[j]; a[j]=tmp; }
-    return a;
+// ── HOME ───────────────────────────────────────────────────────────────
+function switchToHome() {
+    currentSubject=null; currentTopic=null; currentLesson=null;
+    document.getElementById('header-title').textContent='Home';
+    document.getElementById('back-btn').classList.remove('show');
+    document.querySelector('nav').classList.remove('show');
+    document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('#main-nav .nav-item').forEach(function(n){ n.classList.remove('active'); });
+    document.getElementById('tab-home').classList.add('active');
+    updateHomeStats(); renderHomeSubjects();
+    var sb = document.getElementById('sidebar');
+    if (sb.classList.contains('open')) toggleSidebar();
 }
-function safeId(s) { return String(s||'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-'); }
-
-// ── KEYBOARD ───────────────────────────────────────────────────────────
-var sidebarNavMode = false;
-var sidebarNavIndex = -1;
-var sidebarNavItems = [];
-
-document.addEventListener('keydown', function(e) {
-    var tag = document.activeElement && document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-    
-    // Sidebar navigation mode
-    if (sidebarNavMode) {
-        handleSidebarNav(e);
-        return;
-    }
-    
-    var tab = document.querySelector('.tab-view.active');
-    if (!tab || tab.id !== 'tab-flashcard') return;
-    
-    // Flashcard shortcuts
-    if (e.code==='Space'||e.code==='Enter')       { e.preventDefault(); flipCard(); }
-    else if (e.code==='ArrowRight'||e.code==='KeyJ') { e.preventDefault(); nextCard(true); }
-    else if (e.code==='ArrowLeft'||e.code==='KeyF')  { e.preventDefault(); nextCard(false); }
-    else if (e.code==='ArrowUp'||e.code==='KeyP')    { e.preventDefault(); nextCard('pass'); }
-    else if (e.code==='KeyB') { e.preventDefault(); toggleBookmark(e); }
-    else if (e.code==='Period'||e.key==='>') { e.preventDefault(); nextContainer(); }
-    else if (e.code==='Comma'||e.key==='<')  { e.preventDefault(); prevContainer(); }
-    else if (e.code==='KeyS') { 
-        e.preventDefault(); 
-        var sidebar = document.getElementById('sidebar');
-        if (sidebar.classList.contains('open') && sidebarNavMode) {
-            exitSidebarNavMode();
-            toggleSidebar();
-        } else {
-            enterSidebarNavMode();
-        }
-    }
-});
-
-function nextContainer() {
-    if (!currentSubject || !currentSub) return;
-    var containers = getContainerList();
-    if (containers.length === 0) return;
-    
-    var currentIdx = getCurrentContainerIndex(containers);
-    var nextIdx = (currentIdx + 1) % containers.length;
-    activateContainer(containers[nextIdx]);
+function updateHomeStats() {
+    var subjects=Object.keys(cardContent);
+    var subjectCount=subjects.length, topicCount=0, lessonCount=0, cardCount=0;
+    subjects.forEach(function(subj){
+        Object.keys(cardContent[subj]).forEach(function(topic){
+            topicCount++;
+            var lessons=getLessons(subj,topic);
+            for (var ln in lessons){ lessonCount++; cardCount+=lessons[ln].length; }
+        });
+    });
+    document.getElementById('home-stat-total-subjects').textContent=subjectCount;
+    document.getElementById('home-stat-total-topics').textContent=topicCount;
+    document.getElementById('home-stat-total-lessons').textContent=lessonCount;
+    document.getElementById('home-stat-total-cards').textContent=cardCount;
 }
-
-function prevContainer() {
-    if (!currentSubject || !currentSub) return;
-    var containers = getContainerList();
-    if (containers.length === 0) return;
-    
-    var currentIdx = getCurrentContainerIndex(containers);
-    var prevIdx = (currentIdx - 1 + containers.length) % containers.length;
-    activateContainer(containers[prevIdx]);
-}
-
-function getContainerList() {
-    var list = [];
-    if (getBookmarkCount() > 0) list.push({type:'bookmarks'});
-    if (missedCardsThisSession.size > 0) list.push({type:'missed'});
-    list.push({type:'all'});
-    
-    if (cardContent[currentSubject] && cardContent[currentSubject][currentSub]) {
-        var num = Math.ceil(cardContent[currentSubject][currentSub].length / CARDS_PER_CONTAINER);
-        for (var i = 0; i < num; i++) {
-            list.push({type:'container', id:i});
-        }
-    }
-    return list;
-}
-
-function getCurrentContainerIndex(containers) {
-    for (var i = 0; i < containers.length; i++) {
-        var c = containers[i];
-        if (reviewBookmarksMode && c.type === 'bookmarks') return i;
-        if (reviewMissedMode && c.type === 'missed') return i;
-        if (!reviewBookmarksMode && !reviewMissedMode && c.type === 'all' && currentContainer === 'all') return i;
-        if (!reviewBookmarksMode && !reviewMissedMode && c.type === 'container' && currentContainer === c.id) return i;
-    }
-    // If no exact match found, return first container
-    return containers.length > 0 ? 0 : -1;
-}
-
-function activateContainer(container) {
-    if (container.type === 'bookmarks') toggleReviewBookmarks();
-    else if (container.type === 'missed') toggleReviewMissed();
-    else if (container.type === 'all') selectContainer('all');
-    else if (container.type === 'container') selectContainer(container.id);
-}
-
-// ── SIDEBAR NAVIGATION ─────────────────────────────────────────────────
-function enterSidebarNavMode() {
-    var sidebar = document.getElementById('sidebar');
-    if (!sidebar.classList.contains('open')) {
-        toggleSidebar();
-    }
-    
-    sidebarNavMode = true;
-    sidebarNavIndex = 0;
-    buildSidebarNavList();
-    highlightSidebarItem();
-}
-
-function exitSidebarNavMode() {
-    sidebarNavMode = false;
-    sidebarNavIndex = -1;
-    clearSidebarHighlights();
-}
-
-function buildSidebarNavList() {
-    sidebarNavItems = [];
-    var subjects = document.querySelectorAll('.subject-title');
-    subjects.forEach(function(el) {
-        sidebarNavItems.push({type:'subject', element:el});
-        var parent = el.closest('.subject-item');
-        if (parent && parent.classList.contains('expanded')) {
-            var topics = parent.querySelectorAll('.sub-item');
-            topics.forEach(function(topic) {
-                sidebarNavItems.push({type:'topic', element:topic});
-            });
-        }
+function renderHomeSubjects() {
+    var list=document.getElementById('home-subjects-list');
+    var subjects=Object.keys(cardContent);
+    if (!subjects.length){ list.innerHTML='<div class="home-no-subjects">No subjects yet. Create one to begin!</div>'; return; }
+    list.innerHTML='';
+    subjects.forEach(function(subj){
+        var topics=cardContent[subj];
+        var topicCount=Object.keys(topics).length;
+        var cardCount=0;
+        Object.keys(topics).forEach(function(topic){ cardCount+=totalCardsInTopic(subj,topic); });
+        var item=document.createElement('div'); item.className='home-subject-item';
+        var nameDiv=document.createElement('div');
+        var name=document.createElement('div'); name.className='home-subject-name'; name.textContent=subj;
+        var count=document.createElement('div'); count.style.cssText='color:var(--dimmer);font-size:.8rem;margin-top:2px;';
+        count.textContent=topicCount+' topic'+(topicCount!==1?'s':'')+' · '+cardCount+' card'+(cardCount!==1?'s':'');
+        nameDiv.appendChild(name); nameDiv.appendChild(count);
+        var badge=document.createElement('div'); badge.className='home-subject-count'; badge.textContent=cardCount;
+        item.appendChild(nameDiv); item.appendChild(badge);
+        item.onclick=(function(s){ return function(){ toggleSubject(s); }; })(subj);
+        list.appendChild(item);
     });
 }
-
-function highlightSidebarItem() {
-    clearSidebarHighlights();
-    if (sidebarNavIndex >= 0 && sidebarNavIndex < sidebarNavItems.length) {
-        var item = sidebarNavItems[sidebarNavIndex];
-        item.element.style.outline = '2px solid #fff';
-        item.element.style.outlineOffset = '2px';
-        item.element.scrollIntoView({block:'nearest', behavior:'smooth'});
-    }
+function createQuickStart() {
+    var name=prompt('Subject name (e.g., Biology):');
+    if (!name||!name.trim()) return;
+    var subj=name.trim();
+    if (!cardContent[subj]) cardContent[subj]={};
+    saveData(); renderSidebar(); loadSidebarState();
+    var topicName=prompt('Topic name for "'+subj+'" (e.g., Chapter 1):');
+    if (!topicName||!topicName.trim()) return;
+    var topic=topicName.trim();
+    if (!cardContent[subj][topic]) cardContent[subj][topic]={lessons:{}};
+    saveData(); renderSidebar(); loadSidebarState();
+    updateHomeStats(); renderHomeSubjects();
+    loadTopic(subj, topic);
 }
 
-function clearSidebarHighlights() {
-    sidebarNavItems.forEach(function(item) {
-        item.element.style.outline = '';
-        item.element.style.outlineOffset = '';
-    });
+// ── EXPORT/IMPORT ALL ──────────────────────────────────────────────────
+function exportFullBackup() {
+    var totalCards=0, totalLessons=0;
+    for (var s in cardContent) for (var t in cardContent[s]) {
+        var lessons=getLessons(s,t);
+        for (var ln in lessons){ totalLessons++; totalCards+=lessons[ln].length; }
+    }
+    var backup={version:2,exportDate:new Date().toISOString(),deviceId:DEVICE_ID,cardContent,metadata:{totalSubjects:Object.keys(cardContent).length,totalLessons,totalCards}};
+    var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
+    a.download='MonoFlash-Backup-'+ts+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    alert('✅ Backup created!\n'+backup.metadata.totalSubjects+' subjects · '+backup.metadata.totalLessons+' lessons · '+backup.metadata.totalCards+' cards');
 }
-
-function handleSidebarNav(e) {
-    if (e.code === 'Escape') {
-        e.preventDefault();
-        exitSidebarNavMode();
-        toggleSidebar();
-        return;
-    }
-    
-    if (e.code === 'ArrowDown') {
-        e.preventDefault();
-        sidebarNavIndex = Math.min(sidebarNavIndex + 1, sidebarNavItems.length - 1);
-        highlightSidebarItem();
-    }
-    else if (e.code === 'ArrowUp') {
-        e.preventDefault();
-        sidebarNavIndex = Math.max(sidebarNavIndex - 1, 0);
-        highlightSidebarItem();
-    }
-    else if (e.code === 'Enter') {
-        e.preventDefault();
-        if (sidebarNavIndex >= 0 && sidebarNavIndex < sidebarNavItems.length) {
-            var item = sidebarNavItems[sidebarNavIndex];
-            if (item.type === 'subject') {
-                var subjectItem = item.element.closest('.subject-item');
-                if (subjectItem) {
-                    var subjectText = item.element.textContent.trim().split('\n')[0];
-                    toggleSubject(subjectText);
-                    buildSidebarNavList(); // Rebuild list after expansion
-                    highlightSidebarItem();
-                }
-            } else if (item.type === 'topic') {
-                item.element.click(); // Load topic
-                exitSidebarNavMode();
-            }
-        }
-    }
+function importFullBackup(e) {
+    var file=e.target.files&&e.target.files[0]; if(!file) return;
+    if (!confirm('⚠️ This will REPLACE all your current data. Continue?')){ e.target.value=''; return; }
+    var reader=new FileReader();
+    reader.onload=function(ev){
+        try {
+            var b=JSON.parse(ev.target.result);
+            if (!b.cardContent||typeof b.cardContent!=='object') throw new Error('Invalid backup');
+            cardContent=b.cardContent; srsData={}; bookmarks={};
+            migrateData(); ensureSRS(); saveData();
+            renderSidebar(); loadSidebarState(); updateHomeStats(); renderHomeSubjects();
+            currentSubject=null; currentTopic=null; currentLesson=null;
+            switchToHome();
+            alert('✅ Imported successfully!');
+        } catch(err){ alert('❌ Failed: '+err.message); }
+        e.target.value='';
+    };
+    reader.readAsText(file);
 }
-
-// ── QOL FUNCTIONS ───────────────────────────────────────────────────────
+function downloadDatabaseJson() {
+    var data={cardContent,srsData,bookmarks,exportDate:new Date().toISOString()};
+    var ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    a.download='MonoFlash-Database-'+ts+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+}
 function resetAllData() {
-    if (!confirm('⚠️ THIS WILL DELETE ALL YOUR DATA!\n\nAre you absolutely sure? Use "Export ALL Data" first to backup.')) return;
-    if (!confirm('🔴 Last chance! Delete everything?')) return;
-    
-    // Clear all localStorage
+    if (!confirm('⚠️ DELETE ALL DATA? Use Export first to backup.')) return;
+    if (!confirm('🔴 Last chance!')) return;
     localStorage.removeItem('monoFlashCardContent');
     localStorage.removeItem('monoFlashSRSData');
     localStorage.removeItem('monoFlashBookmarks');
     localStorage.removeItem('monoFlashSidebarState');
-    
-    // Reset variables
-    cardContent = {};
-    srsData = {};
-    bookmarks = {};
-    currentSubject = null;
-    currentSub = null;
-    shuffledCards = [];
-    
-    // Update UI
-    renderSidebar();
-    loadSidebarState();
-    switchToHome();
-    updateHomeStats();
-    renderHomeSubjects();
-    
-    alert('✅ All data cleared. Starting fresh!');
+    cardContent={}; srsData={}; bookmarks={};
+    currentSubject=null; currentTopic=null; currentLesson=null; shuffledCards=[];
+    renderSidebar(); loadSidebarState(); switchToHome();
+    alert('✅ All data cleared.');
 }
 
-function downloadDatabaseJson() {
-    var data = {
-        cardContent: cardContent,
-        srsData: srsData,
-        bookmarks: bookmarks,
-        exportDate: new Date().toISOString()
-    };
-    var ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
-    a.download = 'MonoFlash-Database-' + ts + '.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+// ── KEYBOARD ───────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+    var tag=document.activeElement&&document.activeElement.tagName;
+    if (tag==='INPUT'||tag==='TEXTAREA') return;
+    var tab=document.querySelector('.tab-view.active');
+    if (!tab||tab.id!=='tab-flashcard') return;
+    if (e.code==='Space'||e.code==='Enter')       { e.preventDefault(); flipCard(); }
+    else if (e.code==='ArrowRight'||e.code==='KeyJ') { e.preventDefault(); nextCard(true); }
+    else if (e.code==='ArrowLeft'||e.code==='KeyF')  { e.preventDefault(); nextCard(false); }
+    else if (e.code==='ArrowUp'||e.code==='KeyP')    { e.preventDefault(); nextCard('pass'); }
+    else if (e.code==='KeyB') { e.preventDefault(); var fakeEv={stopPropagation:function(){}}; toggleBookmark(fakeEv); }
+    else if (e.code==='Escape') { e.preventDefault(); goBackToLessons(); }
+});
+
+// ── UTILS ──────────────────────────────────────────────────────────────
+function shuffle(arr) {
+    var a=arr.slice();
+    for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=a[i]; a[i]=a[j]; a[j]=tmp; }
+    return a;
+}
+function safeId(s) { return String(s||'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-'); }
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+function formatRelativeTime(ts) {
+    var diff = Date.now() - ts;
+    var mins = Math.floor(diff/60000);
+    if (mins<1) return 'Just now';
+    if (mins<60) return mins+'m ago';
+    var hrs = Math.floor(mins/60);
+    if (hrs<24) return hrs+'h ago';
+    var days = Math.floor(hrs/24);
+    return days+'d ago';
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────
-// Check if onboarding is needed
-if (!hasCompletedOnboarding()) {
-    showOnboarding();
-} else {
-    // Show home by default
-    switchToHome();
-}
-
-renderSidebar();
-loadSidebarState();
-
-// Initial UI state
+migrateData();
+if (!hasCompletedOnboarding()) { showOnboarding(); }
+else { switchToHome(); }
+renderSidebar(); loadSidebarState();
 setDot('offline');
 syncHelpEl.textContent = 'Offline mode - sync loads on demand';
-console.log('✅ MonoFlash loaded - Cloudflare sync ready');
-
-// ── HOME SECTION ───────────────────────────────────────────────────────
-function switchToHome() {
-    currentSubject = null;
-    currentSub = null;
-    document.getElementById('header-title').textContent = 'Home';
-    
-    // Hide containers when not in flashcard view
-    document.getElementById('cont-selector').style.display = 'none';
-    document.getElementById('progress-wrap').style.display = 'none';
-    document.getElementById('progress-text').style.display = 'none';
-    
-    // Hide nav when in home
-    document.querySelector('nav').classList.remove('show');
-    
-    updateHomeStats();
-    renderHomeSubjects();
-    
-    // Switch to home tab
-    document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
-    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-    document.getElementById('tab-home').classList.add('active');
-    // Don't activate any nav item since home is not in the nav bar
-    
-    toggleSidebar();
-}
-
-function updateHomeStats() {
-    // Count subjects, topics, and cards
-    var subjects = Object.keys(cardContent);
-    var subjectCount = subjects.length;
-    var topicCount = 0;
-    var cardCount = 0;
-    
-    subjects.forEach(function(subj) {
-        Object.keys(cardContent[subj]).forEach(function(sub) {
-            topicCount++;
-            cardCount += cardContent[subj][sub].length;
-        });
-    });
-    
-    // Calculate overall accuracy from SRS data
-    var totalReviewed = 0;
-    var totalCorrect = 0;
-    
-    subjects.forEach(function(subj) {
-        var topics = Object.keys(cardContent[subj] || {});
-        topics.forEach(function(sub) {
-            var srs = srsData[subj] && srsData[subj][sub] ? srsData[subj][sub] : [];
-            srs.forEach(function(s) {
-                if (s.lastReviewed) {
-                    totalReviewed++;
-                    if (s.interval > 0) totalCorrect++;
-                }
-            });
-        });
-    });
-    
-    var accuracy = totalReviewed ? Math.round(totalCorrect / totalReviewed * 100) : '-';
-    
-    document.getElementById('home-stat-total-subjects').textContent = subjectCount;
-    document.getElementById('home-stat-total-topics').textContent = topicCount;
-    document.getElementById('home-stat-total-cards').textContent = cardCount;
-    document.getElementById('home-stat-accuracy').textContent = accuracy === '-' ? '-' : accuracy + '%';
-}
-
-function renderHomeSubjects() {
-    var list = document.getElementById('home-subjects-list');
-    var subjects = Object.keys(cardContent);
-    
-    if (subjects.length === 0) {
-        list.innerHTML = '<div class="home-no-subjects">No subjects yet. Create one to begin!</div>';
-        return;
-    }
-    
-    list.innerHTML = '';
-    subjects.forEach(function(subj) {
-        var topics = cardContent[subj];
-        var topicCount = Object.keys(topics).length;
-        var cardCount = 0;
-        
-        Object.keys(topics).forEach(function(topic) {
-            cardCount += topics[topic].length;
-        });
-        
-        var item = document.createElement('div');
-        item.className = 'home-subject-item';
-        
-        var nameDiv = document.createElement('div');
-        var name = document.createElement('div');
-        name.className = 'home-subject-name';
-        name.textContent = subj;
-        var count = document.createElement('div');
-        count.style.cssText = 'color:var(--dimmer);font-size:.8rem;margin-top:2px;';
-        count.textContent = topicCount + ' topic' + (topicCount !== 1 ? 's' : '') + ' • ' + cardCount + ' card' + (cardCount !== 1 ? 's' : '');
-        nameDiv.appendChild(name);
-        nameDiv.appendChild(count);
-        
-        var countBadge = document.createElement('div');
-        countBadge.className = 'home-subject-count';
-        countBadge.textContent = cardCount;
-        
-        item.appendChild(nameDiv);
-        item.appendChild(countBadge);
-        
-        item.onclick = (function(subjName) {
-            return function() {
-                // Find and click the subject title element
-                var subjectItems = document.querySelectorAll('.subject-title');
-                for (var i = 0; i < subjectItems.length; i++) {
-                    if (subjectItems[i].textContent.includes(subjName)) {
-                        toggleSubject(subjName);
-                        break;
-                    }
-                }
-            };
-        })(subj);
-        
-        list.appendChild(item);
-    });
-}
-
-function createQuickStart() {
-    var name = prompt('Enter Subject name (e.g., Biology):');
-    if (!name || !name.trim()) return;
-    
-    var subject = name.trim();
-    if (!cardContent[subject]) {
-        cardContent[subject] = {};
-        saveData();
-        renderSidebar();
-        loadSidebarState();
-        
-        var topicName = prompt('Enter Topic name for "' + subject + '" (e.g., Cell Structure):');
-        if (!topicName || !topicName.trim()) return;
-        
-        var topic = topicName.trim();
-        cardContent[subject][topic] = [];
-        saveData();
-        renderSidebar();
-        loadSidebarState();
-        updateHomeStats();
-        renderHomeSubjects();
-        
-        // Switch to database tab for adding cards
-        setTimeout(function() {
-            currentSubject = subject;
-            currentSub = topic;
-            document.querySelectorAll('.tab-view').forEach(function(t){ t.classList.remove('active'); });
-            document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-            document.getElementById('tab-database').classList.add('active');
-            document.querySelector('nav').classList.add('show');
-            var navItems = document.querySelectorAll('.nav-item');
-            if (navItems.length >= 4) navItems[3].classList.add('active'); // Database tab (4th item)
-            document.getElementById('header-title').textContent = subject + ' › ' + topic;
-            renderDbList();
-        }, 100);
-    } else {
-        alert('Subject already exists!');
-    }
-}
+console.log('✅ MonoFlash v2 (Lessons) loaded');
 </script>
 </body>
 </html>
