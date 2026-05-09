@@ -36,7 +36,7 @@
         #sidebar.open{left:0;}
         .sb-head{padding:24px 20px;border-bottom:1px solid var(--border-b);background:linear-gradient(180deg,var(--surface-el) 0%,var(--surface) 100%);position:relative;overflow:hidden;}
         .sb-head::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,255,255,.03) 0%,transparent 70%);pointer-events:none;}
-        .sb-title{font-size:1.4rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;background:linear-gradient(135deg,#fff 0%,#888 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .sb-title{font-size:1.4rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;background:linear-gradient(135deg,#fff 0%,#888 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;}
         .sb-sub{font-size:.62rem;color:var(--dimmer);line-height:1.4;letter-spacing:.3px;}
         /* SESSION SUMMARY OVERLAY */
         .session-summary{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(12px);z-index:3000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
@@ -191,8 +191,8 @@
         .cont-chevron{font-size:.65rem;transition:transform .35s cubic-bezier(.4,0,.2,1);display:inline-block;}
         .cont-selector.collapsed .cont-chevron{transform:rotate(-90deg);}
         /* smooth body animation via grid rows */
-        .cont-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);overflow:hidden;}
-        .cont-selector.collapsed .cont-body{grid-template-rows:0fr;}
+        .cont-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1);overflow:hidden;max-height:500px;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1),max-height .3s cubic-bezier(.4,0,.2,1);}
+        .cont-selector.collapsed .cont-body{grid-template-rows:0fr;max-height:0;}
         .cont-body-inner{min-height:0;padding:0 10px 10px;}
         .cont-buttons{display:flex;gap:6px;flex-wrap:wrap;width:100%;}
         .cont-btn{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--dim);cursor:pointer;font-size:.75rem;font-weight:700;letter-spacing:.5px;transition:all var(--tf);white-space:nowrap;text-transform:uppercase;user-select:none;}
@@ -278,7 +278,7 @@
         /* HOME */
         .home-content{display:flex;flex-direction:column;gap:24px;padding:8px 0;}
         .home-hero{text-align:center;padding:32px 0;background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,rgba(0,0,0,.3) 100%);border-radius:16px;border:1px solid var(--border-b);margin-bottom:16px;}
-        .home-title{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#fff 0%,#aaa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;letter-spacing:-1px;}
+        .home-title{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#fff 0%,#aaa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;letter-spacing:-1px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;}
         .home-subtitle{font-size:1rem;color:var(--dim);margin-bottom:20px;line-height:1.6;}
         .home-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
         .home-btn{padding:12px 24px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:#fff;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:.9rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;box-shadow:var(--sh-sm);}
@@ -598,7 +598,7 @@
                 <button class="btn" onclick="nextCard('pass')">Pass</button>
                 <button class="btn btn-primary" onclick="nextCard(true)">Got it</button>
             </div>
-            <div class="swipe-hint">S wrong &nbsp;·&nbsp; D pass &nbsp;·&nbsp; F got it &nbsp;·&nbsp; Space flip</div>
+            <div class="swipe-hint">A/← wrong &nbsp;·&nbsp; S/↓ pass &nbsp;·&nbsp; D/→ got it &nbsp;·&nbsp; W/↑ flip &nbsp;·&nbsp; / back</div>
         </div>
 
         <!-- STATS -->
@@ -1200,6 +1200,13 @@ function renderCard() {
 function flipCard() {
     if (!shuffledCards.length||cardIndex>=shuffledCards.length) return;
     document.getElementById('active-card').classList.toggle('flipped');
+}
+function previousCard() {
+    if (!currentLesson||cardIndex<=0) return;
+    stopTimer();
+    cardIndex--;
+    renderCard();
+    if (timerEnabled) startTimer();
 }
 function nextCard(quality) {
     if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length) return;
@@ -2122,18 +2129,26 @@ document.addEventListener('keydown', function(e) {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
-    // / = toggle sidebar — works everywhere
-    if (e.code === 'Slash' && !e.shiftKey) { e.preventDefault(); toggleSidebar(); return; }
+    // / = go back to previous card or toggle sidebar
+    if (e.code === 'Slash' && !e.shiftKey) {
+        e.preventDefault();
+        var tab = document.querySelector('.tab-view.active');
+        if (tab && tab.id === 'tab-flashcard') {
+            previousCard();
+        } else {
+            toggleSidebar();
+        }
+        return;
+    }
 
     var tab = document.querySelector('.tab-view.active');
     if (!tab || tab.id !== 'tab-flashcard') return;
 
     if (e.code === 'Space' || e.code === 'Enter')  { e.preventDefault(); flipCard(); }
-    else if (e.code === 'KeyF')                    { e.preventDefault(); nextCard(true); }   // F = Got it
-    else if (e.code === 'KeyD')                    { e.preventDefault(); nextCard('pass'); } // D = Pass
-    else if (e.code === 'KeyS')                    { e.preventDefault(); nextCard(false); }  // S = Wrong
-    else if (e.code === 'ArrowUp')                 { e.preventDefault(); flipCard(); }       // ↑ = flip
-    else if (e.code === 'ArrowDown')               { e.preventDefault(); flipCard(); }       // ↓ = flip
+    else if (e.code === 'KeyW' || e.code === 'ArrowUp')       { e.preventDefault(); flipCard(); }       // W or ↑ = flip
+    else if (e.code === 'KeyA' || e.code === 'ArrowLeft')     { e.preventDefault(); nextCard(false); }  // A or ← = Wrong
+    else if (e.code === 'KeyS' || e.code === 'ArrowDown')     { e.preventDefault(); nextCard('pass'); } // S or ↓ = Pass
+    else if (e.code === 'KeyD' || e.code === 'ArrowRight')    { e.preventDefault(); nextCard(true); }   // D or → = Got it
     else if (e.code === 'Comma'  && e.shiftKey)    { e.preventDefault(); shiftSet(-1); }     // < = prev set
     else if (e.code === 'Period' && e.shiftKey)    { e.preventDefault(); shiftSet(1); }      // > = next set
     else if (e.code === 'KeyB')                    { e.preventDefault(); var fakeEv={stopPropagation:function(){}}; toggleBookmark(fakeEv); }
@@ -2169,7 +2184,8 @@ setDot('offline');
 syncHelpEl.textContent = 'Offline mode - sync loads on demand';
 // Init timer UI after DOM settled
 setTimeout(updateTimerUI, 0);
-console.log('✅ MonoFlash v3 loaded');
+console.log('✅ MonoFlash v2 loaded');
+console.log('⚜️ Proudly Crafter by Wasif Akand');
 </script>
 </body>
 </html>
