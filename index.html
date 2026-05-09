@@ -13,6 +13,8 @@
     </script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+
         :root {
             --bg:#000; --surface:#0a0a0a; --surface-el:#121212;
             --border:#1a1a1a; --border-b:#333;
@@ -24,6 +26,9 @@
         }
         *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
         body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;height:100vh;height:100dvh;display:flex;overflow:hidden;-webkit-font-smoothing:antialiased;}
+        @supports not (-webkit-touch-callout: none) {
+            body { font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+        }
         body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.3;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.01) 2px,rgba(255,255,255,.01) 4px);}
 
         /* SIDEBAR */
@@ -311,7 +316,8 @@
         #overlay{position:fixed;inset:0;background:rgba(0,0,0,.2);backdrop-filter:blur(2px);z-index:900;display:none;}
         #overlay.show{display:block;animation:fadeIn var(--tn);}
         /* Shadow gradient on sidebar right edge when open */
-        #sidebar.open::after{content:'';position:fixed;left:280px;top:0;bottom:0;width:60px;background:linear-gradient(to right,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none;z-index:999;}
+        #sidebar::after{content:'';position:fixed;left:280px;top:0;bottom:0;width:60px;background:linear-gradient(to right,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none;z-index:999;opacity:0;transition:opacity .4s cubic-bezier(.4,0,.2,1);}
+        #sidebar.open::after{opacity:1;}
 
         /* TIMER */
         .timer-wrap{display:none;align-items:center;gap:12px;margin-bottom:8px;flex-shrink:0;}
