@@ -329,17 +329,18 @@
         .mcq-wrap{display:none;flex-direction:column;gap:14px;flex:1;min-height:0;padding:8px 0;overflow-y:auto;}
         #tab-flashcard.mcq-mode .card-container,#tab-flashcard.mcq-mode .controls,#tab-flashcard.mcq-mode .swipe-hint{display:none;}
         #tab-flashcard.mcq-mode .mcq-wrap{display:flex;}
-        /* SAQ LIST MODE */
-        .saq-wrap{display:none;flex-direction:column;gap:12px;flex:1;min-height:0;padding:8px 0;overflow-y:auto;}
-        #tab-flashcard.saq-mode .card-container,#tab-flashcard.saq-mode .mcq-wrap,#tab-flashcard.saq-mode .controls,#tab-flashcard.saq-mode .swipe-hint,#tab-flashcard.saq-mode .card-progress-info{display:none;}
+        /* SAQ ONE-AT-A-TIME MODE */
+        .saq-wrap{display:none;flex-direction:column;gap:14px;flex:1;min-height:0;padding:8px 0;overflow-y:auto;}
+        #tab-flashcard.saq-mode .card-container,#tab-flashcard.saq-mode .mcq-wrap,#tab-flashcard.saq-mode .controls,#tab-flashcard.saq-mode .swipe-hint{display:none;}
         #tab-flashcard.saq-mode .saq-wrap{display:flex;}
-        .saq-head{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));box-shadow:0 8px 22px rgba(0,0,0,.18);}
-        .saq-title{font-size:1rem;font-weight:800;letter-spacing:.2px;color:#fff;}
-        .saq-subtitle{font-size:.72rem;color:var(--dimmer);line-height:1.45;max-width:56ch;}
-        .saq-list{display:flex;flex-direction:column;gap:10px;}
-        .saq-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 16px;border:1.5px solid var(--border-b);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025));box-shadow:var(--sh-sm);}
-        .saq-index{flex-shrink:0;min-width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid var(--border-b);font-size:.72rem;font-weight:800;color:var(--dim);}
-        .saq-question{font-size:.96rem;font-weight:600;line-height:1.5;color:#fff;}
+        .saq-card{position:relative;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;box-shadow:var(--sh-lg);min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;flex-shrink:0;}
+        .saq-bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.4rem;cursor:pointer;z-index:10;user-select:none;transition:all .25s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+        .saq-bookmark-icon:hover{transform:scale(1.2) rotate(-10deg);}
+        .saq-bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
+        .saq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;color:#fff;}
+        .saq-mark-badge{font-size:.65rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border-b);background:rgba(255,255,255,.05);color:var(--dim);}
+        .saq-controls{display:flex;gap:8px;justify-content:center;margin-top:2px;padding:0 8px;flex-shrink:0;}
+        .saq-controls .btn{flex:1;padding:12px 6px;font-size:.72rem;}
         .mcq-card{position:relative;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;box-shadow:var(--sh-lg);min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;flex-shrink:0;}
         .mcq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;}
         .mcq-bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.4rem;cursor:pointer;z-index:10;user-select:none;transition:all .25s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
@@ -865,7 +866,18 @@
                 <div class="mcq-hint">Tap an option &nbsp;·&nbsp; 1-4 to answer &nbsp;·&nbsp; B bookmark &nbsp;·&nbsp; / back</div>
             </div>
             <div class="saq-wrap" id="saq-wrap">
-                <div class="saq-list" id="saq-list"></div>
+                <div class="saq-card" id="saq-card">
+                    <div class="saq-bookmark-icon" id="saq-bookmark-icon" onclick="toggleBookmark(event)">☆</div>
+                    <div class="saq-question" id="saq-question"></div>
+                    <span class="saq-mark-badge" id="saq-mark-badge"></span>
+                </div>
+                <div class="saq-controls">
+                    <button class="btn" onclick="previousCard()">&larr; Back</button>
+                    <button class="btn" onclick="nextCard(false)">Wrong</button>
+                    <button class="btn btn-primary" onclick="nextCard(true)">Got it</button>
+                    <button class="btn" onclick="nextCard('pass')">Next &rarr;</button>
+                </div>
+                <div class="mcq-hint">A/&larr; wrong &nbsp;&middot;&nbsp; D/&rarr; got it &nbsp;&middot;&nbsp; S/&darr; next &nbsp;&middot;&nbsp; / back</div>
             </div>
             <div class="controls">
                 <button class="btn" onclick="nextCard(false)">Missed</button>
@@ -1647,7 +1659,7 @@ function toggleBookmark(e) {
     renderContSel();
 }
 function updateBookmarkIcon() {
-    var icons = [document.getElementById('bookmark-icon'), document.getElementById('mcq-bookmark-icon')].filter(Boolean);
+    var icons = [document.getElementById('bookmark-icon'), document.getElementById('mcq-bookmark-icon'), document.getElementById('saq-bookmark-icon')].filter(Boolean);
     if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length){
         icons.forEach(function(icon){ icon.style.display='none'; });
         return;
@@ -1660,6 +1672,8 @@ function updateBookmarkIcon() {
         icon.textContent = isBookmarked ? '★' : '☆';
         icon.className = icon.id==='mcq-bookmark-icon'
             ? (isBookmarked ? 'mcq-bookmark-icon active' : 'mcq-bookmark-icon')
+            : icon.id==='saq-bookmark-icon'
+            ? (isBookmarked ? 'saq-bookmark-icon active' : 'saq-bookmark-icon')
             : (isBookmarked ? 'bookmark-icon active' : 'bookmark-icon');
     });
 }
@@ -1704,7 +1718,7 @@ function renderCard() {
     if (isMCQ) {
         renderMCQOptions(cur);
     } else if (isSAQ) {
-        renderSAQList();
+        renderSAQCard(cur);
     } else {
         front.textContent = cur.q;
         back.textContent  = cur.a;
@@ -1714,11 +1728,8 @@ function renderCard() {
     if (timerWrap) timerWrap.classList.add('visible');
     var timerSvg = document.querySelector('.timer-svg');
     if (timerSvg) timerSvg.classList.toggle('hidden', !timerEnabled);
-    if (cardLabel) {
-        if (isSAQ) cardLabel.textContent = 'Questions · ' + (shuffledCards.length || 0) + ' items';
-        else cardLabel.textContent = 'Card '+(cardIndex+1)+' of '+shuffledCards.length;
-    }
-    if (cardBar) cardBar.style.width = isSAQ ? '100%' : (cardIndex/shuffledCards.length*100)+'%';
+    if (cardLabel) cardLabel.textContent = 'Card '+(cardIndex+1)+' of '+shuffledCards.length;
+    if (cardBar) cardBar.style.width = (cardIndex/shuffledCards.length*100)+'%';
 
     updateBookmarkIcon();
     requestAnimationFrame(function(){ card.classList.remove('no-transition'); });
@@ -1750,20 +1761,11 @@ function renderMCQOptions(c) {
     });
 }
 
-function renderSAQList() {
-    var listWrap = document.getElementById('saq-list');
-    if (!listWrap) return;
-    var cards = currentLesson ? getLessonCards(currentSubject, currentTopic, currentLesson) : [];
-    var html = '<div class="saq-head"><div class="saq-title">Answer the following questions</div><div class="saq-subtitle">Read each question in order. The mark is shown on the right for quick review.</div></div>';
-    var saqCards = cards.filter(function(c){ return c.type === 'saq'; });
-    if (!saqCards.length) {
-        listWrap.innerHTML = html + '<div style="color:var(--dimmer);text-align:center;padding:18px 12px;">No SAQ questions yet.</div>';
-        return;
-    }
-    saqCards.forEach(function(c, idx){
-        html += '<div class="saq-item"><span class="saq-index">'+(idx+1)+'</span><div class="saq-question" style="flex:1;">'+escHtml(c.q)+'</div><span class="db-saq-mark">'+escHtml(c.mark || '1')+'</span></div>';
-    });
-    listWrap.innerHTML = html;
+function renderSAQCard(c) {
+    var qEl = document.getElementById('saq-question');
+    var markEl = document.getElementById('saq-mark-badge');
+    if (qEl) qEl.textContent = c.q;
+    if (markEl) markEl.textContent = 'Mark: ' + (c.mark || '1');
 }
 function selectMCQOption(opt, btnEl) {
     if (mcqLocked) return;
@@ -1797,7 +1799,6 @@ function previousCard() {
 }
 function nextCard(quality) {
     if (!currentLesson||!shuffledCards.length||cardIndex>=shuffledCards.length) return;
-    if (getLessonType(currentSubject, currentTopic, currentLesson) === 'saq') return;
     stopTimer(); // stop current card timer
     var cur = shuffledCards[cardIndex];
     if (quality!=='pass') {
@@ -3279,8 +3280,6 @@ document.addEventListener('keydown', function(e) {
         else if (e.code === 'Escape') { e.preventDefault(); goBackToLessons(); }
         return;
     }
-    if (curCard && curCard.type === 'saq') return;
-
     if (e.code === 'Space' || e.code === 'Enter')  { e.preventDefault(); flipCard(); }
     else if (e.code === 'KeyW' || e.code === 'ArrowUp')       { e.preventDefault(); flipCard(); }       // W or ↑ = flip
     else if (e.code === 'KeyA' || e.code === 'ArrowLeft')     { e.preventDefault(); nextCard(false); }  // A or ← = Wrong
