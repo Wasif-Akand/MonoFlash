@@ -156,6 +156,28 @@
         .lessons-empty{text-align:center;padding:40px 20px;color:var(--dimmer);}
         .lessons-empty-icon{font-size:2.5rem;margin-bottom:12px;}
         .lessons-empty-text{font-size:.9rem;line-height:1.5;}
+        .lessons-add-row{display:flex;gap:8px;}
+        .divider-add-btn{flex:0 0 52px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:var(--dim);cursor:pointer;font-size:.95rem;font-weight:800;letter-spacing:.5px;transition:all .2s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-sm);font-family:'Courier New',monospace;}
+        .divider-add-btn:hover{background:var(--surface-el);border-color:var(--accent);color:var(--text);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.08);}
+        .divider-add-btn:active{transform:translateY(0) scale(.95);transition:all .1s;}
+
+        /* LESSON DIVIDERS (collapsible groups) */
+        .lesson-divider{margin:22px 0 14px;}
+        .lesson-divider:first-child{margin-top:2px;}
+        .lesson-divider-header{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:2px 0;}
+        .lesson-divider-chevron{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.05rem;color:#fff;line-height:1;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .2s;}
+        .lesson-divider-header:hover .lesson-divider-chevron{opacity:.7;}
+        .lesson-divider.collapsed .lesson-divider-chevron{transform:rotate(-90deg);}
+        .lesson-divider-name{font-weight:700;font-size:1rem;letter-spacing:.3px;color:#fff;white-space:nowrap;flex-shrink:0;}
+        .lesson-divider-line{flex:1;height:2px;background:rgba(255,255,255,.22);min-width:16px;border-radius:1px;}
+        .lesson-divider-del{font-size:1.4rem;color:#fff;cursor:pointer;padding:0 4px;flex-shrink:0;line-height:1;transition:color .2s,transform .2s,opacity .2s;}
+        .lesson-divider-del:hover{color:var(--err);opacity:1;transform:scale(1.2) rotate(90deg);}
+        .lesson-divider-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1);}
+        .lesson-divider.collapsed .lesson-divider-body{grid-template-rows:0fr;}
+        .lesson-divider-body-inner{min-height:0;overflow:hidden;padding-top:14px;}
+        .lesson-divider-empty{font-size:.72rem;color:var(--dimmer);text-align:center;padding:14px 8px;border:1px dashed var(--border);border-radius:8px;margin-bottom:10px;}
+        .lesson-divider-add{width:100%;padding:8px 0;background:transparent;border:none;color:var(--dimmer);cursor:pointer;font-size:.68rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;text-align:left;transition:color var(--tf);}
+        .lesson-divider-add:hover{color:var(--text);}
 
         /* FLASHCARD TAB LAYOUT */
         #tab-flashcard{overflow:hidden;padding:12px 16px 8px;}
@@ -610,8 +632,8 @@
 
 <div id="lesson-create-modal" onclick="if(event.target===this) closeLessonCreateModal()">
     <div class="lc-modal">
-        <div class="lc-title">New Lesson</div>
-        <div class="lc-subtitle">Name it, then choose how it's studied</div>
+        <div class="lc-title" id="lc-title">New Lesson</div>
+        <div class="lc-subtitle" id="lc-subtitle">Name it, then choose how it's studied</div>
         <div class="lc-field">
             <label class="lc-label">Lesson ID</label>
             <input type="text" id="lc-name-input" class="lc-input" placeholder="e.g. Lesson 1" maxlength="60" onkeydown="if(event.key==='Enter')confirmCreateLesson()">
@@ -991,6 +1013,33 @@ function getTopicObj(subj, topic) {
     if (!cardContent[subj] || !cardContent[subj][topic]) return null;
     var t = cardContent[subj][topic];
     if (!t.lessons) t.lessons = {};
+    if (!t.dividers) t.dividers = {};
+    if (!t.lessonOrder) t.lessonOrder = Object.keys(t.lessons).map(function(n){ return {type:'lesson', name:n}; });
+
+    // Divider placements take priority — clean them first (drop stale/duplicate refs)
+    var inDivider = {};
+    for (var did in t.dividers) {
+        if (!t.dividers[did].lessons) t.dividers[did].lessons = [];
+        t.dividers[did].lessons = t.dividers[did].lessons.filter(function(n){
+            if (!t.lessons[n] || inDivider[n]) return false;
+            inDivider[n] = true; return true;
+        });
+    }
+    // Top-level order: drop stale refs, drop anything that's actually living in a divider (dedupe), drop dupes
+    var seenTop = {};
+    t.lessonOrder = t.lessonOrder.filter(function(it){
+        if (it.type === 'divider') return !!t.dividers[it.id];
+        if (!t.lessons[it.name] || inDivider[it.name] || seenTop[it.name]) return false;
+        seenTop[it.name] = true;
+        return true;
+    });
+    // Anything left in t.lessons that isn't placed anywhere → append at top level
+    for (var ln in t.lessons) {
+        if (!inDivider[ln] && !seenTop[ln]) {
+            t.lessonOrder.push({type:'lesson', name:ln});
+            seenTop[ln] = true;
+        }
+    }
     return t;
 }
 function getLessons(subj, topic) {
@@ -1259,8 +1308,10 @@ function loadTopic(subj, topic) {
 function renderLessonsScreen() {
     var container = document.getElementById('tab-lessons');
     container.innerHTML = '';
-    var lessons = getLessons(currentSubject, currentTopic);
+    var t = getTopicObj(currentSubject, currentTopic);
+    var lessons = t ? t.lessons : {};
     var lessonNames = Object.keys(lessons);
+    var lessonOrder = t ? t.lessonOrder : [];
 
     var html = '<div style="padding:0;">';
 
@@ -1300,65 +1351,156 @@ function renderLessonsScreen() {
     html += '</div>';
     html += '<div style="padding:12px 20px 0;">';
 
-    if (lessonNames.length === 0) {
+    if (lessonOrder.length === 0) {
         html += '<div class="lessons-empty">';
         html += '<div class="lessons-empty-icon">📖</div>';
         html += '<div class="lessons-empty-text">No lessons yet.<br>Add lessons using the panel below or go to the Data tab.</div>';
         html += '</div>';
     } else {
-        lessonNames.forEach(function(ln) {
-            var cards = lessons[ln];
-            var lType = getLessonType(currentSubject, currentTopic, ln);
-            var srs = getLessonSRS(currentSubject, currentTopic, ln);
-            var dueCount = srs.filter(function(s){ return isDue(s); }).length;
-            var masteredCount = srs.filter(function(s){ return s.interval>=7; }).length;
-            var lastStudied = null;
-            srs.forEach(function(s){ if(s.lastReviewed&&(!lastStudied||s.lastReviewed>lastStudied)) lastStudied=s.lastReviewed; });
-            var reviewed = srs.filter(function(s){ return s.lastReviewed; }).length;
-            var pct = cards.length ? Math.round(reviewed/cards.length*100) : 0;
-            var lastStr = lastStudied ? formatRelativeTime(lastStudied) : 'Never studied';
-
-            html += '<div class="lesson-card" onclick="loadLesson(\''+escAttr(ln)+'\')">';
-            html += '<div class="lesson-card-inner">';
-            html += '<div class="lesson-card-top">';
-            html += '<div class="lesson-card-name">'+escHtml(ln)+(lType==='mcq'?'<span class="tag-mcq">MCQ</span>':'')+'</div>';
-            html += '<span class="lesson-card-del" onclick="event.stopPropagation();deleteLesson(\''+escAttr(ln)+'\')" title="Delete lesson">×</span>';
-            html += '</div>';
-            html += '<div class="lesson-card-meta">';
-            html += '<div class="lesson-meta-item">'+(lType==='mcq'?'☑️':'🃏')+' <span>'+cards.length+' cards</span></div>';
-            html += '<div class="lesson-meta-item">🔔 <span>'+dueCount+' due</span></div>';
-            html += '<div class="lesson-meta-item">⭐ <span>'+masteredCount+' mastered</span></div>';
-            html += '<div class="lesson-meta-item">🕐 <span>'+lastStr+'</span></div>';
-            html += '</div>';
-            html += '<div class="lesson-progress-wrap"><div class="lesson-progress-bar" style="width:'+pct+'%"></div></div>';
-            html += '<div class="lesson-progress-pct">'+pct+'% reviewed</div>';
-            html += '</div>';
-            html += '</div>';
+        lessonOrder.forEach(function(item) {
+            if (item.type === 'lesson') {
+                html += buildLessonCardHtml(item.name);
+            } else if (item.type === 'divider') {
+                var div = t.dividers[item.id];
+                if (!div) return;
+                var dLessons = div.lessons || [];
+                html += '<div class="lesson-divider'+(div.collapsed?' collapsed':'')+'" id="div-'+item.id+'">';
+                html += '<div class="lesson-divider-header" onclick="toggleDividerCollapse(\''+item.id+'\')">';
+                html += '<span class="lesson-divider-chevron">▾</span>';
+                html += '<span class="lesson-divider-name">'+escHtml(div.name)+'</span>';
+                html += '<span class="lesson-divider-line"></span>';
+                html += '<span class="lesson-divider-del" onclick="event.stopPropagation();deleteDivider(\''+item.id+'\')" title="Delete divider">×</span>';
+                html += '</div>';
+                html += '<div class="lesson-divider-body"><div class="lesson-divider-body-inner">';
+                if (dLessons.length === 0) {
+                    html += '<div class="lesson-divider-empty">No lessons in here yet</div>';
+                } else {
+                    dLessons.forEach(function(ln){ html += buildLessonCardHtml(ln); });
+                }
+                html += '<button class="lesson-divider-add" onclick="openLessonCreateModal(\''+item.id+'\')">+ Add Lesson Here</button>';
+                html += '</div></div>';
+                html += '</div>';
+            }
         });
     }
 
     // Add lesson section
     html += '<div class="lessons-add-section">';
-    html += '<button class="btn btn-primary" onclick="openLessonCreateModal()" style="width:100%;padding:13px 20px;font-size:.85rem;">+ New Lesson</button>';
-    html += '<div style="font-size:.75rem;color:var(--dimmer);margin-top:10px;">Cards are added afterwards from the <strong style="color:var(--dim);">Data tab</strong> via text or JSON</div>';
+    html += '<div class="lessons-add-row">';
+    html += '<button class="btn btn-primary" onclick="openLessonCreateModal()" style="flex:1;padding:13px 20px;font-size:.85rem;">+ New Lesson</button>';
+    html += '<button class="divider-add-btn" onclick="addDividerPrompt()" title="Add a divider to group lessons">&lt;&gt;</button>';
+    html += '</div>';
+    html += '<div style="font-size:.75rem;color:var(--dimmer);margin-top:10px;">Cards are added afterwards from the <strong style="color:var(--dim);">Data tab</strong> via text or JSON · use <strong style="color:var(--dim);">&lt;&gt;</strong> to group lessons under a divider</div>';
     html += '</div>';
 
     html += '</div></div>';
     container.innerHTML = html;
 }
 
+function buildLessonCardHtml(ln) {
+    var lessons = getLessons(currentSubject, currentTopic);
+    var cards = lessons[ln] || [];
+    var lType = getLessonType(currentSubject, currentTopic, ln);
+    var srs = getLessonSRS(currentSubject, currentTopic, ln);
+    var dueCount = srs.filter(function(s){ return isDue(s); }).length;
+    var masteredCount = srs.filter(function(s){ return s.interval>=7; }).length;
+    var lastStudied = null;
+    srs.forEach(function(s){ if(s.lastReviewed&&(!lastStudied||s.lastReviewed>lastStudied)) lastStudied=s.lastReviewed; });
+    var reviewed = srs.filter(function(s){ return s.lastReviewed; }).length;
+    var pct = cards.length ? Math.round(reviewed/cards.length*100) : 0;
+    var lastStr = lastStudied ? formatRelativeTime(lastStudied) : 'Never studied';
+
+    var h = '';
+    h += '<div class="lesson-card" onclick="loadLesson(\''+escAttr(ln)+'\')">';
+    h += '<div class="lesson-card-inner">';
+    h += '<div class="lesson-card-top">';
+    h += '<div class="lesson-card-name">'+escHtml(ln)+(lType==='mcq'?'<span class="tag-mcq">MCQ</span>':'')+'</div>';
+    h += '<span class="lesson-card-del" onclick="event.stopPropagation();deleteLesson(\''+escAttr(ln)+'\')" title="Delete lesson">×</span>';
+    h += '</div>';
+    h += '<div class="lesson-card-meta">';
+    h += '<div class="lesson-meta-item">'+(lType==='mcq'?'☑️':'🃏')+' <span>'+cards.length+' cards</span></div>';
+    h += '<div class="lesson-meta-item">🔔 <span>'+dueCount+' due</span></div>';
+    h += '<div class="lesson-meta-item">⭐ <span>'+masteredCount+' mastered</span></div>';
+    h += '<div class="lesson-meta-item">🕐 <span>'+lastStr+'</span></div>';
+    h += '</div>';
+    h += '<div class="lesson-progress-wrap"><div class="lesson-progress-bar" style="width:'+pct+'%"></div></div>';
+    h += '<div class="lesson-progress-pct">'+pct+'% reviewed</div>';
+    h += '</div>';
+    h += '</div>';
+    return h;
+}
+
+// ── LESSON DIVIDERS (collapsible groups) ────────────────────────────────
+function genDividerId() { return 'div_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+function addDividerPrompt() {
+    if (!currentSubject || !currentTopic) return;
+    var name = prompt('Divider name (e.g. "Week 1", "Chapter 3"):');
+    if (!name || !name.trim()) return;
+    var t = getTopicObj(currentSubject, currentTopic);
+    if (!t) return;
+    var id = genDividerId();
+    t.dividers[id] = { name: name.trim(), collapsed: false, lessons: [] };
+    t.lessonOrder.push({ type:'divider', id:id });
+    saveData();
+    renderLessonsScreen();
+}
+
+function deleteDivider(id) {
+    var t = getTopicObj(currentSubject, currentTopic);
+    if (!t || !t.dividers[id]) return;
+    var div = t.dividers[id];
+    var n = (div.lessons||[]).length;
+    var msg = n>0 ? ('Delete divider "'+div.name+'" and its '+n+' lesson'+(n!==1?'s':'')+'?') : ('Delete divider "'+div.name+'"?');
+    if (!confirm(msg)) return;
+    (div.lessons||[]).slice().forEach(function(ln){
+        delete t.lessons[ln];
+        if (t.lessonTypes) delete t.lessonTypes[ln];
+        if (srsData[currentSubject]&&srsData[currentSubject][currentTopic]) delete srsData[currentSubject][currentTopic][ln];
+        if (bookmarks[currentSubject]&&bookmarks[currentSubject][currentTopic]) delete bookmarks[currentSubject][currentTopic][ln];
+        if (currentLesson===ln) currentLesson=null;
+    });
+    delete t.dividers[id];
+    t.lessonOrder = t.lessonOrder.filter(function(it){ return !(it.type==='divider' && it.id===id); });
+    saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
+    renderLessonsScreen();
+}
+
+function toggleDividerCollapse(id) {
+    var t = getTopicObj(currentSubject, currentTopic);
+    if (!t || !t.dividers[id]) return;
+    t.dividers[id].collapsed = !t.dividers[id].collapsed;
+    saveData();
+    var el = document.getElementById('div-'+id);
+    if (el) el.classList.toggle('collapsed', t.dividers[id].collapsed);
+}
+
 // ── LESSON CREATE MODAL ────────────────────────────────────────────────
 var lessonCreateType = 'flashcard';
-function openLessonCreateModal() {
+var lessonCreateTargetDivider = null;
+function openLessonCreateModal(dividerId) {
     lessonCreateType = 'flashcard';
+    lessonCreateTargetDivider = dividerId || null;
     var inp = document.getElementById('lc-name-input');
     if (inp) inp.value = '';
     updateLessonCreateToggleUI();
+    var titleEl = document.getElementById('lc-title');
+    var subEl = document.getElementById('lc-subtitle');
+    if (lessonCreateTargetDivider) {
+        var t = getTopicObj(currentSubject, currentTopic);
+        var dName = (t && t.dividers[lessonCreateTargetDivider]) ? t.dividers[lessonCreateTargetDivider].name : '';
+        if (titleEl) titleEl.textContent = 'New Lesson';
+        if (subEl) subEl.textContent = 'Adding under "'+dName+'" — name it, then choose how it\'s studied';
+    } else {
+        if (titleEl) titleEl.textContent = 'New Lesson';
+        if (subEl) subEl.textContent = "Name it, then choose how it's studied";
+    }
     document.getElementById('lesson-create-modal').classList.add('show');
     setTimeout(function(){ if (inp) inp.focus(); }, 60);
 }
 function closeLessonCreateModal() {
     document.getElementById('lesson-create-modal').classList.remove('show');
+    lessonCreateTargetDivider = null;
 }
 function setLessonCreateType(t) {
     lessonCreateType = t;
@@ -1382,10 +1524,16 @@ function confirmCreateLesson() {
     var name = inp.value.trim();
     if (!name) { inp.focus(); return; }
     if (!cardContent[currentSubject][currentTopic]) cardContent[currentSubject][currentTopic]={lessons:{}};
-    if (!cardContent[currentSubject][currentTopic].lessons) cardContent[currentSubject][currentTopic].lessons={};
-    if (cardContent[currentSubject][currentTopic].lessons[name]) { alert('Lesson already exists!'); return; }
-    cardContent[currentSubject][currentTopic].lessons[name] = [];
+    var t = getTopicObj(currentSubject, currentTopic);
+    if (t.lessons[name]) { alert('Lesson already exists!'); return; }
+    t.lessons[name] = [];
+    if (lessonCreateTargetDivider && t.dividers[lessonCreateTargetDivider]) {
+        t.dividers[lessonCreateTargetDivider].lessons.push(name);
+    } else {
+        t.lessonOrder.push({ type:'lesson', name:name });
+    }
     setLessonType(currentSubject, currentTopic, name, lessonCreateType);
+    lessonCreateTargetDivider = null;
     saveData(); renderSidebar(); updateHomeStats(); renderHomeSubjects();
     closeLessonCreateModal();
     renderLessonsScreen();
