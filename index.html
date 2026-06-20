@@ -578,6 +578,12 @@
 
         .summary-modal.full-lesson{border-color:rgba(255,215,0,.4);box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 60px rgba(255,215,0,.15);}
         .summary-modal.full-lesson .summary-emoji{animation:celebPop .6s cubic-bezier(.34,1.56,.64,1);}
+        .summary-sync-status{display:none;align-items:center;justify-content:center;gap:6px;font-size:.7rem;font-weight:600;letter-spacing:.3px;color:var(--dim);margin:-4px 0 18px;padding:6px 10px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--border-b);}
+        .summary-sync-status.syncing{color:var(--dim);}
+        .summary-sync-status.syncing::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;animation:syncPulse 1s ease-in-out infinite;}
+        .summary-sync-status.done{color:var(--ok);border-color:rgba(46,204,113,.3);}
+        .summary-sync-status.error{color:var(--err);border-color:rgba(231,76,60,.3);}
+        @keyframes syncPulse{0%,100%{opacity:.3;transform:scale(.8);}50%{opacity:1;transform:scale(1.1);}}
         @keyframes celebPop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
         .summary-cont-btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border-b);background:var(--surface);color:var(--dim);cursor:pointer;font-size:.8rem;font-weight:700;transition:all var(--tf);letter-spacing:.3px;}
         .summary-cont-btn:hover{background:var(--surface-el);color:var(--text);border-color:var(--border-b);}
@@ -621,6 +627,7 @@
             <div class="summary-stat"><div class="summary-stat-num" id="sum-correct">0</div><div class="summary-stat-label">Got it</div></div>
             <div class="summary-stat"><div class="summary-stat-num" id="sum-pct">0%</div><div class="summary-stat-label">Accuracy</div></div>
         </div>
+        <div class="summary-sync-status" id="summary-sync-status" style="display:none;"></div>
         <!-- Container nav (shown when containers exist and lesson not fully done) -->
         <div id="summary-cont-nav" style="display:none;margin-bottom:14px;">
             <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dimmer);margin-bottom:8px;">Jump to set</div>
@@ -1198,12 +1205,30 @@ async function pushToCloud() {
         syncTextEl.textContent = 'Push to Cloud';
         syncHelpEl.textContent = '✅ Uploaded successfully';
         setTimeout(function(){ setDot('offline'); syncHelpEl.textContent='Ready to sync'; }, 2000);
+        return true;
     } catch(err) {
         setDot('error');
         syncHelpEl.textContent = 'Upload failed: '+err.message;
+        return false;
     }
 }
 function manualSync() { pushToCloud(); }
+// Auto-push triggered on full lesson completion. Reuses the sidebar sync
+// pipeline (so DEVICE_ID/online state/dot all stay consistent), and mirrors
+// status into the summary modal if it's visible.
+function autoPushAfterLesson() {
+    var statusEl = document.getElementById('summary-sync-status');
+    if (statusEl) {
+        statusEl.style.display = 'flex';
+        statusEl.className = 'summary-sync-status syncing';
+        statusEl.textContent = '☁ Syncing…';
+    }
+    pushToCloud().then(function(ok) {
+        if (!statusEl) return;
+        if (ok) { statusEl.className = 'summary-sync-status done'; statusEl.textContent = '☁ Synced to cloud'; }
+        else { statusEl.className = 'summary-sync-status error'; statusEl.textContent = '⚠ Sync failed — will retry next push'; }
+    });
+}
 async function readDatabase() {
     var btn = document.getElementById('read-text');
     btn.textContent = '⏳ Downloading...';
@@ -3014,6 +3039,10 @@ function showSessionSummary() {
     var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
     var allReviewed = srs.filter(function(s){ return s.lastReviewed; }).length === allCards.length;
     var isFullLessonComplete = allReviewed && allCards.length > 0;
+
+    var syncStatusEl = document.getElementById('summary-sync-status');
+    if (syncStatusEl) syncStatusEl.style.display = 'none';
+    if (isFullLessonComplete) { autoPushAfterLesson(); }
 
     // If summary is off, skip straight to next action
     if (!summaryEnabled) {
