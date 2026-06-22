@@ -232,6 +232,9 @@
         .cont-btn.weak{background:rgba(243,156,18,.08);border-color:rgba(243,156,18,.3);color:#f39c12;}
         .cont-btn.weak:hover{background:rgba(243,156,18,.15);border-color:rgba(243,156,18,.5);}
         .cont-btn.weak.active{background:rgba(243,156,18,.2);border-color:#f39c12;color:#f39c12;}
+        .cont-btn.unreviewed{background:rgba(100,180,255,.08);border-color:rgba(100,180,255,.3);color:#64b4ff;}
+        .cont-btn.unreviewed:hover{background:rgba(100,180,255,.15);border-color:rgba(100,180,255,.5);}
+        .cont-btn.unreviewed.active{background:rgba(100,180,255,.2);border-color:#64b4ff;color:#64b4ff;}
         .weak-badge{display:none;font-size:.62rem;font-weight:700;letter-spacing:.3px;color:#f39c12;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);padding:2px 8px;border-radius:999px;margin:3px 0;width:fit-content;}
         .cont-info{font-size:.68rem;color:var(--dimmer);margin-top:8px;width:100%;text-align:center;}
 
@@ -266,6 +269,9 @@
         .db-btn-edit:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);}
         .db-btn-delete{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.3);color:#e74c3c;}
         .db-btn-delete:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.5);}
+        .db-btn-bm{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:#ffd700;}
+        .db-btn-bm:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);}
+        .db-btn-bm.active{background:rgba(255,215,0,.22);border-color:#ffd700;color:#ffd700;}
         .db-item-edit{display:flex;gap:12px;align-items:flex-start;flex:1;}
         .db-edit-inputs{flex:1;display:flex;flex-direction:column;gap:8px;}
         .db-edit-input{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border-b);padding:10px;border-radius:6px;font-family:inherit;font-size:.85rem;transition:all var(--tf);}
@@ -1073,7 +1079,7 @@ var currentSubject = null, currentTopic = null, currentLesson = null;
 var cardIndex = 0, sessionStats = {total:0,correct:0};
 var shuffledCards = [], dueCards = [];
 var CARDS_PER_CONTAINER = 20;
-var currentContainer = 'all', reviewMissedMode = false, reviewBookmarksMode = false, reviewWeakMode = false;
+var currentContainer = 'all', reviewMissedMode = false, reviewBookmarksMode = false, reviewWeakMode = false, reviewUnreviewedMode = false;
 var missedCardsThisSession = new Set();
 
 // ── DATA HELPERS ───────────────────────────────────────────────────────
@@ -1760,6 +1766,16 @@ function getBookmarkCount() {
     if (!currentLesson) return 0;
     return getLessonBookmarks(currentSubject, currentTopic, currentLesson).length;
 }
+function toggleBookmarkFromDb(lessonName, cardIdx) {
+    var bmList = getLessonBookmarks(currentSubject, currentTopic, lessonName);
+    var pos = bmList.indexOf(cardIdx);
+    if (pos > -1) bmList.splice(pos, 1);
+    else bmList.push(cardIdx);
+    saveLocal();
+    renderDbList();
+    // Keep the flashcard bookmark icon in sync if this card is currently active
+    if (currentLesson === lessonName) updateBookmarkIcon();
+}
 
 // ── FLASHCARDS ─────────────────────────────────────────────────────────
 function renderCard() {
@@ -1815,9 +1831,21 @@ function renderCard() {
         if (reviewWeakMode) {
             var acc = cardAccuracy(cur.srs);
             wb.style.display = 'block';
+            wb.style.color = '';
+            wb.style.background = '';
+            wb.style.borderColor = '';
             wb.textContent = acc===null ? 'Weak focus' : 'Weak focus · '+Math.round(acc*100)+'% accuracy so far';
+        } else if (reviewUnreviewedMode) {
+            wb.style.display = 'block';
+            wb.style.color = '#64b4ff';
+            wb.style.background = 'rgba(100,180,255,.1)';
+            wb.style.borderColor = 'rgba(100,180,255,.3)';
+            wb.textContent = 'Unreviewed · not studied yet';
         } else {
             wb.style.display = 'none';
+            wb.style.color = '';
+            wb.style.background = '';
+            wb.style.borderColor = '';
         }
     }
 
@@ -2064,6 +2092,10 @@ function getWeakCount(subj, topic, lesson) {
     var srs = getLessonSRS(subj, topic, lesson);
     return srs.filter(isWeakCard).length;
 }
+function getUnreviewedCount(subj, topic, lesson) {
+    var srs = getLessonSRS(subj, topic, lesson);
+    return srs.filter(function(s){ return !s.lastReviewed; }).length;
+}
 function renderContSel() {
     var wrap = document.getElementById('cont-selector');
     var buttons = document.getElementById('cont-buttons');
@@ -2073,7 +2105,8 @@ function renderContSel() {
     var all = getLessonCards(currentSubject, currentTopic, currentLesson);
     var num = Math.ceil(all.length/CARDS_PER_CONTAINER);
     var weakCount = getWeakCount(currentSubject, currentTopic, currentLesson);
-    if (all.length<=CARDS_PER_CONTAINER&&missedCardsThisSession.size===0&&getBookmarkCount()===0&&weakCount===0){ wrap.style.display='none'; return; }
+    var unreviewedCount = getUnreviewedCount(currentSubject, currentTopic, currentLesson);
+    if (all.length<=CARDS_PER_CONTAINER&&missedCardsThisSession.size===0&&getBookmarkCount()===0&&weakCount===0&&unreviewedCount===0){ wrap.style.display='none'; return; }
     wrap.style.display='block'; buttons.innerHTML='';
     if (headerLabel) headerLabel.textContent = 'Sets';
     var bmBtn = mkCBtn('Bookmarks ('+getBookmarkCount()+')', reviewBookmarksMode, function(){ toggleReviewBookmarks(); });
@@ -2082,11 +2115,13 @@ function renderContSel() {
     msBtn.classList.add('missed'); buttons.appendChild(msBtn);
     var wkBtn = mkCBtn('Weak ('+weakCount+')', reviewWeakMode, function(){ toggleReviewWeak(); });
     wkBtn.classList.add('weak'); buttons.appendChild(wkBtn);
-    buttons.appendChild(mkCBtn('All', currentContainer==='all'&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode, function(){ selectContainer('all'); }));
+    var urBtn = mkCBtn('Unreviewed ('+unreviewedCount+')', reviewUnreviewedMode, function(){ toggleReviewUnreviewed(); });
+    urBtn.classList.add('unreviewed'); buttons.appendChild(urBtn);
+    buttons.appendChild(mkCBtn('All', currentContainer==='all'&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode&&!reviewUnreviewedMode, function(){ selectContainer('all'); }));
     for (var i=0; i<num; i++) {
         (function(i){
             var s0=i*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,all.length);
-            buttons.appendChild(mkCBtn('S'+(i+1)+' ('+(e0-s0)+')', currentContainer===i&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode, function(){ selectContainer(i); }));
+            buttons.appendChild(mkCBtn('S'+(i+1)+' ('+(e0-s0)+')', currentContainer===i&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode&&!reviewUnreviewedMode, function(){ selectContainer(i); }));
         })(i);
     }
     info.textContent = all.length+' cards · '+CARDS_PER_CONTAINER+' per set';
@@ -2097,7 +2132,7 @@ function mkCBtn(label, active, fn) {
     b.textContent=label; b.onclick=fn; return b;
 }
 function selectContainer(id) {
-    currentContainer=id; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false; cardIndex=0;
+    currentContainer=id; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
     if (!currentLesson) return;
     var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
     var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
@@ -2115,7 +2150,7 @@ function selectContainer(id) {
 }
 function toggleReviewMissed() {
     if (!missedCardsThisSession.size){ alert('No missed cards yet!'); return; }
-    reviewMissedMode=!reviewMissedMode; reviewBookmarksMode=false; reviewWeakMode=false; cardIndex=0;
+    reviewMissedMode=!reviewMissedMode; reviewBookmarksMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
     if (reviewMissedMode) {
         var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
         var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
@@ -2125,7 +2160,7 @@ function toggleReviewMissed() {
 }
 function toggleReviewBookmarks() {
     if (!getBookmarkCount()){ alert('No bookmarked cards yet!'); return; }
-    reviewBookmarksMode=!reviewBookmarksMode; reviewMissedMode=false; reviewWeakMode=false; cardIndex=0;
+    reviewBookmarksMode=!reviewBookmarksMode; reviewMissedMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
     if (reviewBookmarksMode) {
         var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
         var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
@@ -2140,7 +2175,7 @@ function toggleReviewBookmarks() {
 function toggleReviewWeak() {
     var srsCheck = getLessonSRS(currentSubject, currentTopic, currentLesson);
     if (!srsCheck.filter(isWeakCard).length){ alert('No weak cards right now — your accuracy is solid here!'); return; }
-    reviewWeakMode=!reviewWeakMode; reviewMissedMode=false; reviewBookmarksMode=false; cardIndex=0;
+    reviewWeakMode=!reviewWeakMode; reviewMissedMode=false; reviewBookmarksMode=false; reviewUnreviewedMode=false; cardIndex=0;
     if (reviewWeakMode) {
         var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
         var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
@@ -2148,6 +2183,19 @@ function toggleReviewWeak() {
             .map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; })
             .filter(function(c){ return c.q && isWeakCard(c.srs); })
             .sort(function(a,b){ return weaknessScore(b.srs)-weaknessScore(a.srs); });
+    } else { selectContainer(currentContainer); }
+    renderCard(); renderContSel();
+}
+function toggleReviewUnreviewed() {
+    var srsCheck = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    if (!srsCheck.filter(function(s){ return !s.lastReviewed; }).length){ alert('No unreviewed cards — every card has been studied at least once!'); return; }
+    reviewUnreviewedMode=!reviewUnreviewedMode; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false; cardIndex=0;
+    if (reviewUnreviewedMode) {
+        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
+        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
+        shuffledCards=shuffle(cards
+            .map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; })
+            .filter(function(c){ return c.q && !c.srs.lastReviewed; }));
     } else { selectContainer(currentContainer); }
     renderCard(); renderContSel();
 }
@@ -2221,11 +2269,14 @@ function renderDbList() {
         var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
         html += '<div class="db-list-head"><h3>'+escHtml(currentLesson)+lessonTypeBadgeHtml(curType)+' Cards ('+cards.length+')</h3>';
         html += '<button class="btn" onclick="clearAllCards()" style="padding:8px 16px;font-size:.75rem;">Clear Lesson</button></div>';
+        var curBmList = getLessonBookmarks(currentSubject, currentTopic, currentLesson);
         html += '<div id="db-list">';
         cards.forEach(function(c,i) {
+            var isBm = curBmList.indexOf(i) > -1;
             html += '<div class="db-item" id="db-item-'+i+'">';
             html += dbCardContentHtml(c);
             html += '<div class="db-item-actions">';
+            html += '<button class="btn db-btn-bm'+(isBm?' active':'')+'" style="padding:6px 12px;font-size:.75rem;" title="'+(isBm?'Remove bookmark':'Add bookmark')+'" onclick="toggleBookmarkFromDb(\''+escAttr(currentLesson)+'\','+i+')">'+(isBm?'★':'☆')+'</button>';
             html += '<button class="btn db-btn-edit" style="padding:6px 12px;font-size:.75rem;" onclick="editCard('+i+')">✏️</button>';
             html += '<button class="btn db-btn-delete" style="padding:6px 12px;font-size:.75rem;" onclick="deleteCard('+i+')">Del</button>';
             html += '</div></div>';
@@ -2242,10 +2293,13 @@ function renderDbList() {
             if (cards.length === 0) {
                 html += '<div style="color:var(--dimmer);font-size:.85rem;padding:8px 0;">No cards yet</div>';
             }
+            var lnBmList = getLessonBookmarks(currentSubject, currentTopic, ln);
             cards.forEach(function(c,i){
+                var isBm = lnBmList.indexOf(i) > -1;
                 html += '<div class="db-item">';
                 html += dbCardContentHtml(c);
                 html += '<div class="db-item-actions">';
+                html += '<button class="btn db-btn-bm'+(isBm?' active':'')+'" style="padding:6px 12px;font-size:.75rem;" title="'+(isBm?'Remove bookmark':'Add bookmark')+'" onclick="toggleBookmarkFromDb(\''+escAttr(ln)+'\','+i+')">'+(isBm?'★':'☆')+'</button>';
                 html += '<button class="btn db-btn-delete" style="padding:6px 12px;font-size:.75rem;" onclick="deleteCardFromLesson(\''+escAttr(ln)+'\','+i+')">Del</button>';
                 html += '</div></div>';
             });
