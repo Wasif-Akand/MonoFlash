@@ -2349,7 +2349,9 @@ function parseBlockFormat(text) {
         if (rawParts.length === 2) {
             var sq = rawParts[0].trim();
             var mark = rawParts[1].trim();
-            if (sq && mark) {
+            // Only treat as SAQ if the second part is a pure number (a mark/score like 1, 2, 3.5).
+            // Text answers (e.g. "Force that attracts objects") fall through to the regular flashcard handler.
+            if (sq && mark && /^\d+(\.\d+)?$/.test(mark)) {
                 result[target].push({ q:sq, type:'saq', mark:mark });
                 return;
             }
