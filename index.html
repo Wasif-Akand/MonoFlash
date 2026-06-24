@@ -2625,7 +2625,7 @@ var PLAN_TIERS = [
 ];
 
 function getDividerForLesson(subj, topic, lessonName) {
-    var t = cardContent[subj] && cardContent[subj][topic];
+    var t = getTopicObj(subj, topic);
     if (!t || !t.dividers) return null;
     for (var did in t.dividers) {
         var div = t.dividers[did];
