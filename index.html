@@ -197,10 +197,10 @@
         .card.flipped{transform:rotateY(180deg) scale(1.02);}
         .card.flipped:hover{transform:rotateY(180deg) scale(1.03);}
         .card.no-transition{transition:none !important;}
-        .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;justify-content:center;align-items:center;text-align:center;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;font-size:clamp(1rem,3vw,1.25rem);font-weight:500;line-height:1.5;overflow-y:auto;transition:border-color var(--tn);touch-action:manipulation;}
+        .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);display:flex;justify-content:center;align-items:center;text-align:center;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;font-size:clamp(1rem,3vw,1.25rem);font-weight:500;line-height:1.5;overflow-y:auto;transition:border-color var(--tn);touch-action:manipulation;}
         .card-face::-webkit-scrollbar{width:4px;}
         .card-face::-webkit-scrollbar-thumb{background:var(--border-b);border-radius:2px;}
-        .card-back{transform:rotateY(180deg);background:#050505;border-color:var(--accent);box-shadow:inset 0 2px 8px rgba(0,0,0,.8),0 0 24px rgba(255,255,255,.1);}
+        .card-back{transform:rotateY(180deg) translateZ(0.01px);background:#050505;border-color:var(--accent);box-shadow:inset 0 2px 8px rgba(0,0,0,.8),0 0 24px rgba(255,255,255,.1);}
         .controls{display:flex;gap:10px;justify-content:center;margin-top:10px;padding:0 8px;flex-shrink:0;}
         .btn{padding:12px 20px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:#fff;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:.85rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;box-shadow:var(--sh-sm);user-select:none;position:relative;touch-action:manipulation;}
         .btn:hover{transform:translateY(-2px);background:var(--surface-el);box-shadow:0 6px 20px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.08);border-color:var(--accent);}
