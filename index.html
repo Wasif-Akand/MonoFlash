@@ -634,7 +634,13 @@
             .swipe-hint,.mcq-hint{display:none;}
         }
         @media(max-height:500px) and (orientation:landscape){.card-face{font-size:.95rem;padding:12px;}}
+
+        /* LATEX / KATEX THEMING */
+        .katex{color:inherit;font-size:1.05em;}
+        .katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden;}
+        .katex-display>.katex{white-space:normal;}
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>
 <body>
 
@@ -940,6 +946,8 @@
 
 <div id="overlay" onclick="toggleSidebar()"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
 // DATA STRUCTURE (v2 with Lessons)
@@ -954,6 +962,26 @@
 // srsData[subject][topic][lessonName] = [ {interval,easiness,repetitions,nextReview,lastReviewed}, ... ]
 // bookmarks[subject][topic][lessonName] = [ ...indices ]
 // ══════════════════════════════════════════════════════════════
+
+// ── LATEX RENDERING (KaTeX) ─────────────────────────────────────────────
+// Supports $...$ / \(...\) inline math and $$...$$ / \[...\] display math
+// inside card question/answer text anywhere it's rendered to the DOM.
+function renderMath(el) {
+    if (!el) return;
+    if (typeof renderMathInElement !== 'function') return; // KaTeX not loaded yet / offline
+    try {
+        renderMathInElement(el, {
+            delimiters: [
+                {left:'$$', right:'$$', display:true},
+                {left:'\\[', right:'\\]', display:true},
+                {left:'$', right:'$', display:false},
+                {left:'\\(', right:'\\)', display:false}
+            ],
+            throwOnError: false,
+            ignoredTags: ['script','noscript','style','textarea','pre']
+        });
+    } catch(e) { /* malformed LaTeX in a card shouldn't break the app */ }
+}
 
 // ── DEVICE ID & ONBOARDING ────────────────────────────────────────────
 function hasCompletedOnboarding() { return localStorage.getItem('monoFlashOnboardingComplete') === 'true'; }
@@ -1829,6 +1857,7 @@ function renderCard() {
     } else {
         front.textContent = cur.q;
         back.textContent  = cur.a;
+        renderMath(front); renderMath(back);
     }
 
     // Update card progress — always show the progress wrap during a session
@@ -1870,7 +1899,7 @@ function renderMCQOptions(c) {
     mcqLocked = false;
     var qEl = document.getElementById('mcq-question');
     var optsWrap = document.getElementById('mcq-options-wrap');
-    if (qEl) qEl.textContent = c.q;
+    if (qEl) { qEl.textContent = c.q; renderMath(qEl); }
     if (!optsWrap) return;
     optsWrap.innerHTML = '';
     var shuffledOpts = shuffle((c.options||[]).slice());
@@ -1888,12 +1917,13 @@ function renderMCQOptions(c) {
         b.onclick = function(){ selectMCQOption(opt, b); };
         optsWrap.appendChild(b);
     });
+    renderMath(optsWrap);
 }
 
 function renderSAQCard(c) {
     var qEl = document.getElementById('saq-question');
     var markEl = document.getElementById('saq-mark-badge');
-    if (qEl) qEl.textContent = c.q;
+    if (qEl) { qEl.textContent = c.q; renderMath(qEl); }
     if (markEl) markEl.textContent = 'Mark: ' + (c.mark || '1');
 }
 function selectMCQOption(opt, btnEl) {
@@ -2327,6 +2357,7 @@ function renderDbList() {
     html += '</div></div>';
 
     wrap.innerHTML = html;
+    renderMath(wrap);
 }
 
 // ── IMPORT ──────────────────────────────────────────────────────────────
