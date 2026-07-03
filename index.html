@@ -1435,6 +1435,7 @@ function renderSidebar() {
             actions.appendChild(del);
             title.appendChild(actions); item.appendChild(title);
             var subList = document.createElement('div'); subList.className='sub-list';
+            subList.dataset.subject = subj;
             subList.id = 'sub-'+safeId(subj);
             for (var topic in cardContent[subj]) {
                 (function(topic){
@@ -1459,22 +1460,29 @@ function renderSidebar() {
         })(subj);
     }
 }
+function getSubjectSubList(subj) {
+    var lists = document.querySelectorAll('.sub-list');
+    for (var i = 0; i < lists.length; i++) {
+        if (lists[i].dataset.subject === subj) return lists[i];
+    }
+    return null;
+}
 function toggleSubject(subj) {
-    var el = document.getElementById('sub-'+safeId(subj));
+    var el = getSubjectSubList(subj);
     if (!el) return;
     el.classList.toggle('show'); el.parentElement.classList.toggle('expanded');
     saveSidebarState();
 }
 function saveSidebarState() {
     var open = [];
-    document.querySelectorAll('.sub-list.show').forEach(function(el){ open.push(el.id.replace('sub-','')); });
+    document.querySelectorAll('.sub-list.show').forEach(function(el){ open.push(el.dataset.subject || ''); });
     localStorage.setItem('monoFlashSidebarState', JSON.stringify(open));
 }
 function loadSidebarState() {
     try {
         var saved = JSON.parse(localStorage.getItem('monoFlashSidebarState')||'[]');
-        saved.forEach(function(id){
-            var el = document.getElementById('sub-'+id);
+        saved.forEach(function(subj){
+            var el = getSubjectSubList(subj);
             if (el){ el.classList.add('show'); el.parentElement.classList.add('expanded'); }
         });
     } catch(e){}
