@@ -54,6 +54,12 @@
         .summary-btn:hover{background:var(--surface-el);transform:translateY(-1px);}
         .summary-btn-primary{background:linear-gradient(135deg,#fff 0%,#ccc 100%);color:#000;border:none;}
         .summary-btn-primary:hover{background:linear-gradient(135deg,#f5f5f5 0%,#bbb 100%);}
+        .summary-btn-missed{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.4);color:#ff8a7a;}
+        .summary-btn-missed:hover{background:rgba(231,76,60,.2);}
+        .summary-missed-section{text-align:left;margin-bottom:16px;}
+        .summary-missed-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dimmer);margin-bottom:8px;text-align:center;}
+        .summary-missed-list{max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+        .summary-missed-item{font-size:.78rem;line-height:1.4;color:var(--dim);background:var(--surface);border:1px solid var(--border-b);border-left:3px solid #e74c3c;border-radius:8px;padding:8px 10px;}
         /* INLINE CARD ADD */
         .inline-add-card{background:var(--surface-el);border:1px dashed var(--border-b);border-radius:10px;padding:14px;margin-bottom:12px;transition:all var(--tf);}
         .inline-add-card:focus-within{border-color:var(--accent);border-style:solid;}
@@ -237,6 +243,9 @@
         .cont-btn.unreviewed{background:rgba(100,180,255,.08);border-color:rgba(100,180,255,.3);color:#64b4ff;}
         .cont-btn.unreviewed:hover{background:rgba(100,180,255,.15);border-color:rgba(100,180,255,.5);}
         .cont-btn.unreviewed.active{background:rgba(100,180,255,.2);border-color:#64b4ff;color:#64b4ff;}
+        .cont-btn.srs{background:rgba(155,120,255,.08);border-color:rgba(155,120,255,.3);color:#b49bff;}
+        .cont-btn.srs:hover{background:rgba(155,120,255,.15);border-color:rgba(155,120,255,.5);}
+        .cont-btn.srs.active{background:rgba(155,120,255,.2);border-color:#b49bff;color:#b49bff;}
         .weak-badge{display:none;font-size:.62rem;font-weight:700;letter-spacing:.3px;color:#f39c12;background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);padding:2px 8px;border-radius:999px;margin:3px 0;width:fit-content;}
         .cont-info{font-size:.68rem;color:var(--dimmer);margin-top:8px;width:100%;text-align:center;}
 
@@ -657,12 +666,17 @@
             <div class="summary-stat"><div class="summary-stat-num" id="sum-pct">0%</div><div class="summary-stat-label">Accuracy</div></div>
         </div>
         <div class="summary-sync-status" id="summary-sync-status" style="display:none;"></div>
+        <div class="summary-missed-section" id="summary-missed-section" style="display:none;">
+            <div class="summary-missed-title">Missed this session</div>
+            <div class="summary-missed-list" id="summary-missed-list"></div>
+        </div>
         <!-- Container nav (shown when containers exist and lesson not fully done) -->
         <div id="summary-cont-nav" style="display:none;margin-bottom:14px;">
             <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dimmer);margin-bottom:8px;">Jump to set</div>
             <div id="summary-cont-buttons" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
         </div>
         <div class="summary-btns">
+            <button class="summary-btn summary-btn-missed" id="summary-review-missed-btn" style="display:none;" onclick="reviewMissedFromSummary()">Review Missed</button>
             <button class="summary-btn summary-btn-primary" onclick="restartSession()">Study Again</button>
             <button class="summary-btn" onclick="closeSummary()">Back to Lessons</button>
         </div>
@@ -985,6 +999,25 @@ function renderMath(el) {
     } catch(e) { /* malformed LaTeX in a card shouldn't break the app */ }
 }
 
+// KaTeX renders math as a scatter of absolutely-positioned spans purely for
+// visual layout — selecting/copying that DOM gives back garbled fragments,
+// not the LaTeX you typed. So: whenever we set raw text into an element
+// that then goes through renderMath(), we also stash it as data-raw.
+// This listener intercepts copy events and, if the selection lands inside
+// a tagged element, hands the clipboard the original raw string instead
+// of whatever the browser scraped from the rendered spans.
+document.addEventListener('copy', function(e){
+    var sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    var el = node.nodeType === 1 ? node : node.parentElement;
+    var raw = el && el.closest ? el.closest('[data-raw]') : null;
+    if (raw) {
+        e.clipboardData.setData('text/plain', raw.dataset.raw);
+        e.preventDefault();
+    }
+});
+
 // ── DEVICE ID & ONBOARDING ────────────────────────────────────────────
 function hasCompletedOnboarding() { return localStorage.getItem('monoFlashOnboardingComplete') === 'true'; }
 function showOnboarding() { var m=document.getElementById('onboarding'); if(m) m.classList.add('show'); }
@@ -1118,9 +1151,9 @@ function migrateData() {
 
 var currentSubject = null, currentTopic = null, currentLesson = null;
 var cardIndex = 0, sessionStats = {total:0,correct:0};
-var shuffledCards = [], dueCards = [];
+var shuffledCards = [];
 var CARDS_PER_CONTAINER = 20;
-var currentContainer = 'all', reviewMissedMode = false, reviewBookmarksMode = false, reviewWeakMode = false, reviewUnreviewedMode = false;
+var currentContainer = 'srs', reviewBookmarksMode = false;
 var missedCardsThisSession = new Set();
 
 // ── DATA HELPERS ───────────────────────────────────────────────────────
@@ -1285,9 +1318,32 @@ function saveLocal() {
         }
     }
 }
-function saveData() { saveLocal(); }
+function saveData() { saveLocal(); scheduleAutoPush(); }
 
 // ── CLOUD SYNC ──────────────────────────────────────────────────────────
+// Auto-push: every saveData() call (lesson create/delete, card add/edit,
+// import, bookmark, divider, SRS update, etc.) schedules a debounced push.
+// Rapid-fire saves (e.g. answering cards back-to-back) keep resetting the
+// timer so we don't hammer the worker mid-session — it fires once things
+// go quiet. Backgrounding the tab force-flushes immediately so nothing is
+// lost if the app gets closed before the debounce would've fired.
+var autoPushTimer = null;
+var AUTO_PUSH_DELAY_MS = 2500;
+function scheduleAutoPush() {
+    clearTimeout(autoPushTimer);
+    autoPushTimer = setTimeout(function(){ autoPushTimer = null; pushToCloud(); }, AUTO_PUSH_DELAY_MS);
+}
+function flushAutoPush() {
+    if (autoPushTimer) { clearTimeout(autoPushTimer); autoPushTimer = null; }
+    return pushToCloud();
+}
+document.addEventListener('visibilitychange', function(){
+    if (document.hidden && autoPushTimer) { flushAutoPush(); }
+});
+window.addEventListener('pagehide', function(){
+    if (autoPushTimer) { clearTimeout(autoPushTimer); autoPushTimer = null; try { pushToCloud(); } catch(e){} }
+});
+
 async function pushToCloud() {
     setDot('syncing'); setRing(20);
     syncTextEl.textContent = 'Pushing...';
@@ -1323,7 +1379,7 @@ function autoPushAfterLesson() {
         statusEl.className = 'summary-sync-status syncing';
         statusEl.textContent = '☁ Syncing…';
     }
-    pushToCloud().then(function(ok) {
+    flushAutoPush().then(function(ok) {
         if (!statusEl) return;
         if (ok) { statusEl.className = 'summary-sync-status done'; statusEl.textContent = '☁ Synced to cloud'; }
         else { statusEl.className = 'summary-sync-status error'; statusEl.textContent = '⚠ Sync failed — will retry next push'; }
@@ -1730,7 +1786,7 @@ function loadLesson(lessonName) {
     currentLesson = lessonName;
     cardIndex=0; sessionStats={total:0,correct:0};
     missedCardsThisSession.clear();
-    currentContainer='all'; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false;
+    currentContainer='srs'; reviewBookmarksMode=false;
 
     var footer = document.getElementById('lessons-footer');
     if (footer) { footer.classList.remove('show'); footer.innerHTML = ''; }
@@ -1764,11 +1820,32 @@ function goBackToLessons() {
 
 function buildShuffledCards() {
     if (!currentSubject||!currentTopic||!currentLesson) { shuffledCards=[]; return; }
+    shuffledCards = srsQueue();
+}
+// SRS priority queue: coverage first (never-studied cards), then weak cards
+// worst-first, then whatever's due. This is what the "SRS" button and the
+// initial lesson load both use — no manual mode-picking required.
+function srsQueue() {
     var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
-    var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
-    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; });
-    dueCards = w.filter(function(c){ return isDue(c.srs); });
-    shuffledCards = shuffle(dueCards.length ? dueCards : w);
+    var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    var w = cards.map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; })
+                 .filter(function(c){ return c.q; });
+    var unrev = shuffle(w.filter(function(c){ return !c.srs.lastReviewed; }));
+    var weak  = w.filter(function(c){ return c.srs.lastReviewed && isWeakCard(c.srs); })
+                 .sort(function(a,b){ return weaknessScore(b.srs)-weaknessScore(a.srs); });
+    var due   = shuffle(w.filter(function(c){ return c.srs.lastReviewed && !isWeakCard(c.srs) && isDue(c.srs); }));
+    var queue = unrev.concat(weak).concat(due);
+    return queue.length ? queue : shuffle(w); // lesson fully mastered & nothing due — just cycle everything
+}
+function srsQueueCount() {
+    if (!currentLesson) return 0;
+    return srsQueue().length;
+}
+function selectSRS() {
+    currentContainer='srs'; reviewBookmarksMode=false; cardIndex=0;
+    if (!currentLesson) return;
+    shuffledCards = srsQueue();
+    renderCard(); renderContSel();
 }
 
 // ── BOOKMARKS ──────────────────────────────────────────────────────────
@@ -1780,7 +1857,7 @@ function toggleBookmark(e) {
     var idx = bmList.indexOf(cardIdx);
     if (idx>-1) bmList.splice(idx,1);
     else bmList.push(cardIdx);
-    saveLocal();
+    saveData();
     updateBookmarkIcon();
     renderContSel();
 }
@@ -1812,7 +1889,7 @@ function toggleBookmarkFromDb(lessonName, cardIdx) {
     var pos = bmList.indexOf(cardIdx);
     if (pos > -1) bmList.splice(pos, 1);
     else bmList.push(cardIdx);
-    saveLocal();
+    saveData();
     renderDbList();
     // Keep the flashcard bookmark icon in sync if this card is currently active
     if (currentLesson === lessonName) updateBookmarkIcon();
@@ -1838,6 +1915,7 @@ function renderCard() {
         if (tabEl) { tabEl.classList.remove('mcq-mode'); tabEl.classList.remove('saq-mode'); }
         front.textContent = currentLesson ? 'Session complete! Tap Study Again.' : 'Select a topic to begin';
         back.textContent  = currentLesson ? '' : 'Browse your subjects';
+        delete front.dataset.raw; delete back.dataset.raw;
         if (timerWrap) timerWrap.classList.remove('visible');
         document.getElementById('bookmark-icon').style.display='none';
         var wb0 = document.getElementById('weak-badge'); if (wb0) wb0.style.display='none';
@@ -1859,8 +1937,8 @@ function renderCard() {
     } else if (isSAQ) {
         renderSAQCard(cur);
     } else {
-        front.textContent = cur.q;
-        back.textContent  = cur.a;
+        front.textContent = cur.q; front.dataset.raw = cur.q;
+        back.textContent  = cur.a; back.dataset.raw = cur.a;
         renderMath(front); renderMath(back);
     }
 
@@ -1872,19 +1950,19 @@ function renderCard() {
     if (cardBar) cardBar.style.width = (cardIndex/shuffledCards.length*100)+'%';
     var wb = document.getElementById('weak-badge');
     if (wb) {
-        if (reviewWeakMode) {
+        if (cur.srs && !cur.srs.lastReviewed) {
+            wb.style.display = 'block';
+            wb.style.color = '#64b4ff';
+            wb.style.background = 'rgba(100,180,255,.1)';
+            wb.style.borderColor = 'rgba(100,180,255,.3)';
+            wb.textContent = 'Unreviewed · not studied yet';
+        } else if (cur.srs && isWeakCard(cur.srs)) {
             var acc = cardAccuracy(cur.srs);
             wb.style.display = 'block';
             wb.style.color = '';
             wb.style.background = '';
             wb.style.borderColor = '';
             wb.textContent = acc===null ? 'Weak focus' : 'Weak focus · '+Math.round(acc*100)+'% accuracy so far';
-        } else if (reviewUnreviewedMode) {
-            wb.style.display = 'block';
-            wb.style.color = '#64b4ff';
-            wb.style.background = 'rgba(100,180,255,.1)';
-            wb.style.borderColor = 'rgba(100,180,255,.3)';
-            wb.textContent = 'Unreviewed · not studied yet';
         } else {
             wb.style.display = 'none';
             wb.style.color = '';
@@ -1903,7 +1981,7 @@ function renderMCQOptions(c) {
     mcqLocked = false;
     var qEl = document.getElementById('mcq-question');
     var optsWrap = document.getElementById('mcq-options-wrap');
-    if (qEl) { qEl.textContent = c.q; renderMath(qEl); }
+    if (qEl) { qEl.textContent = c.q; qEl.dataset.raw = c.q; renderMath(qEl); }
     if (!optsWrap) return;
     optsWrap.innerHTML = '';
     var shuffledOpts = shuffle((c.options||[]).slice());
@@ -1918,6 +1996,7 @@ function renderMCQOptions(c) {
         var txt = document.createElement('span');
         txt.className = 'mcq-option-text';
         txt.textContent = opt;
+        txt.dataset.raw = opt;
         b.appendChild(letter); b.appendChild(txt);
         b.onclick = function(){ selectMCQOption(opt, b); };
         optsWrap.appendChild(b);
@@ -1928,7 +2007,7 @@ function renderMCQOptions(c) {
 function renderSAQCard(c) {
     var qEl = document.getElementById('saq-question');
     var markEl = document.getElementById('saq-mark-badge');
-    if (qEl) { qEl.textContent = c.q; renderMath(qEl); }
+    if (qEl) { qEl.textContent = c.q; qEl.dataset.raw = c.q; renderMath(qEl); }
     if (markEl) markEl.textContent = 'Mark: ' + (c.mark || '1');
 }
 function selectMCQOption(opt, btnEl) {
@@ -1992,7 +2071,7 @@ function nextCard(quality) {
         var srs = getLessonSRS(currentSubject, currentTopic, currentLesson);
         srs[cur._index] = cur.srs;
         logReview();
-        saveLocal();
+        saveData();
         sessionStats.total++;
         if (quality) sessionStats.correct++;
     }
@@ -2171,24 +2250,18 @@ function renderContSel() {
     if (!currentLesson) { wrap.style.display='none'; return; }
     var all = getLessonCards(currentSubject, currentTopic, currentLesson);
     var num = Math.ceil(all.length/CARDS_PER_CONTAINER);
-    var weakCount = getWeakCount(currentSubject, currentTopic, currentLesson);
-    var unreviewedCount = getUnreviewedCount(currentSubject, currentTopic, currentLesson);
-    if (all.length<=CARDS_PER_CONTAINER&&missedCardsThisSession.size===0&&getBookmarkCount()===0&&weakCount===0&&unreviewedCount===0){ wrap.style.display='none'; return; }
+    if (all.length<=CARDS_PER_CONTAINER&&getBookmarkCount()===0){ wrap.style.display='none'; return; }
     wrap.style.display='block'; buttons.innerHTML='';
     if (headerLabel) headerLabel.textContent = 'Sets';
     var bmBtn = mkCBtn('Bookmarks ('+getBookmarkCount()+')', reviewBookmarksMode, function(){ toggleReviewBookmarks(); });
     bmBtn.classList.add('bookmarks'); buttons.appendChild(bmBtn);
-    var msBtn = mkCBtn('Missed ('+missedCardsThisSession.size+')', reviewMissedMode, function(){ toggleReviewMissed(); });
-    msBtn.classList.add('missed'); buttons.appendChild(msBtn);
-    var wkBtn = mkCBtn('Weak ('+weakCount+')', reviewWeakMode, function(){ toggleReviewWeak(); });
-    wkBtn.classList.add('weak'); buttons.appendChild(wkBtn);
-    var urBtn = mkCBtn('Unreviewed ('+unreviewedCount+')', reviewUnreviewedMode, function(){ toggleReviewUnreviewed(); });
-    urBtn.classList.add('unreviewed'); buttons.appendChild(urBtn);
-    buttons.appendChild(mkCBtn('All', currentContainer==='all'&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode&&!reviewUnreviewedMode, function(){ selectContainer('all'); }));
+    var srsBtn = mkCBtn('SRS ('+srsQueueCount()+')', currentContainer==='srs'&&!reviewBookmarksMode, function(){ selectSRS(); });
+    srsBtn.classList.add('srs'); buttons.appendChild(srsBtn);
+    buttons.appendChild(mkCBtn('All', currentContainer==='all'&&!reviewBookmarksMode, function(){ selectContainer('all'); }));
     for (var i=0; i<num; i++) {
         (function(i){
             var s0=i*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,all.length);
-            buttons.appendChild(mkCBtn('S'+(i+1)+' ('+(e0-s0)+')', currentContainer===i&&!reviewMissedMode&&!reviewBookmarksMode&&!reviewWeakMode&&!reviewUnreviewedMode, function(){ selectContainer(i); }));
+            buttons.appendChild(mkCBtn('S'+(i+1)+' ('+(e0-s0)+')', currentContainer===i&&!reviewBookmarksMode, function(){ selectContainer(i); }));
         })(i);
     }
     info.textContent = all.length+' cards · '+CARDS_PER_CONTAINER+' per set';
@@ -2199,71 +2272,29 @@ function mkCBtn(label, active, fn) {
     b.textContent=label; b.onclick=fn; return b;
 }
 function selectContainer(id) {
-    currentContainer=id; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
+    currentContainer=id; reviewBookmarksMode=false; cardIndex=0;
     if (!currentLesson) return;
     var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
     var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
     if (id==='all') {
-        var w = cards.map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; });
-        var due = w.filter(function(c){ return isDue(c.srs); });
-        shuffledCards = shuffle(due.length?due:w);
+        var w = cards.map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; }).filter(function(c){ return c.q; });
+        shuffledCards = shuffle(w);
     } else {
         var s0=id*CARDS_PER_CONTAINER, e0=Math.min(s0+CARDS_PER_CONTAINER,cards.length);
-        var w2=cards.slice(s0,e0).map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[s0+i]||createSRS(),_index:s0+i}; });
-        var due2=w2.filter(function(c){ return isDue(c.srs); });
-        shuffledCards=shuffle(due2.length?due2:w2);
+        var w2=cards.slice(s0,e0).map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[s0+i]||createSRS(),_index:s0+i}; }).filter(function(c){ return c.q; });
+        shuffledCards=shuffle(w2);
     }
-    renderCard(); renderContSel();
-}
-function toggleReviewMissed() {
-    if (!missedCardsThisSession.size){ alert('No missed cards yet!'); return; }
-    reviewMissedMode=!reviewMissedMode; reviewBookmarksMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
-    if (reviewMissedMode) {
-        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
-        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
-        shuffledCards=shuffle(Array.from(missedCardsThisSession).map(function(i){ return {q:cards[i].q,a:cards[i].a,type:cards[i].type,options:cards[i].options,correct:cards[i].correct,mark:cards[i].mark,srs:srs[i]||createSRS(),_index:i}; }).filter(function(c){ return c.q; }));
-    } else { selectContainer(currentContainer); }
     renderCard(); renderContSel();
 }
 function toggleReviewBookmarks() {
     if (!getBookmarkCount()){ alert('No bookmarked cards yet!'); return; }
-    reviewBookmarksMode=!reviewBookmarksMode; reviewMissedMode=false; reviewWeakMode=false; reviewUnreviewedMode=false; cardIndex=0;
+    reviewBookmarksMode=!reviewBookmarksMode; cardIndex=0;
     if (reviewBookmarksMode) {
         var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
         var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
         var bmIdxs=getLessonBookmarks(currentSubject,currentTopic,currentLesson);
         shuffledCards=shuffle(bmIdxs.map(function(i){ return {q:cards[i].q,a:cards[i].a,type:cards[i].type,options:cards[i].options,correct:cards[i].correct,mark:cards[i].mark,srs:srs[i]||createSRS(),_index:i}; }).filter(function(c){ return c.q; }));
-    } else { selectContainer(currentContainer); }
-    renderCard(); renderContSel();
-}
-// Weak set: cards with sub-75% lifetime accuracy or a current miss streak,
-// worst-first — not shuffled, since the point is to front-load what's
-// actually shaky instead of re-rolling the dice on cards already mastered.
-function toggleReviewWeak() {
-    var srsCheck = getLessonSRS(currentSubject, currentTopic, currentLesson);
-    if (!srsCheck.filter(isWeakCard).length){ alert('No weak cards right now — your accuracy is solid here!'); return; }
-    reviewWeakMode=!reviewWeakMode; reviewMissedMode=false; reviewBookmarksMode=false; reviewUnreviewedMode=false; cardIndex=0;
-    if (reviewWeakMode) {
-        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
-        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
-        shuffledCards = cards
-            .map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; })
-            .filter(function(c){ return c.q && isWeakCard(c.srs); })
-            .sort(function(a,b){ return weaknessScore(b.srs)-weaknessScore(a.srs); });
-    } else { selectContainer(currentContainer); }
-    renderCard(); renderContSel();
-}
-function toggleReviewUnreviewed() {
-    var srsCheck = getLessonSRS(currentSubject, currentTopic, currentLesson);
-    if (!srsCheck.filter(function(s){ return !s.lastReviewed; }).length){ alert('No unreviewed cards — every card has been studied at least once!'); return; }
-    reviewUnreviewedMode=!reviewUnreviewedMode; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false; cardIndex=0;
-    if (reviewUnreviewedMode) {
-        var cards=getLessonCards(currentSubject,currentTopic,currentLesson);
-        var srs=getLessonSRS(currentSubject,currentTopic,currentLesson);
-        shuffledCards=shuffle(cards
-            .map(function(c,i){ return {q:c.q,a:c.a,type:c.type,options:c.options,correct:c.correct,mark:c.mark,srs:srs[i]||createSRS(),_index:i}; })
-            .filter(function(c){ return c.q && !c.srs.lastReviewed; }));
-    } else { selectContainer(currentContainer); }
+    } else { currentContainer==='all' || typeof currentContainer==='number' ? selectContainer(currentContainer) : selectSRS(); }
     renderCard(); renderContSel();
 }
 function renderContStats(allCards) {
@@ -3347,7 +3378,7 @@ function showSessionSummary() {
         modal.classList.add('full-lesson');
     } else {
         // Set-level summary
-        var setLabel = currentContainer === 'all' ? 'Session' : 'Set '+(currentContainer+1);
+        var setLabel = typeof currentContainer === 'number' ? 'Set '+(currentContainer+1) : reviewBookmarksMode ? 'Bookmarks' : currentContainer === 'srs' ? 'SRS Session' : 'Session';
         emoji = pct>=90?'⚡':pct>=70?'✅':'📖';
         title = setLabel+' done!';
         sub = pct>=90?'Nailed it — on to the next!':pct>=70?'Good work. Keep the streak going!':'Review missed ones, then continue.';
@@ -3379,6 +3410,11 @@ function showSessionSummary() {
                 contBtns.appendChild(b);
             })(i);
         }
+        var srsBtn = document.createElement('button');
+        srsBtn.className = 'summary-cont-btn';
+        srsBtn.textContent = 'SRS';
+        srsBtn.onclick = function(){ closeSummaryAndGo('srs'); };
+        contBtns.appendChild(srsBtn);
         var allBtn = document.createElement('button');
         allBtn.className = 'summary-cont-btn';
         allBtn.textContent = 'All';
@@ -3388,12 +3424,49 @@ function showSessionSummary() {
         contNav.style.display = 'none';
     }
 
+    // Missed-cards recap — replaces the old persistent "Missed" filter button
+    var missedSection = document.getElementById('summary-missed-section');
+    var missedList = document.getElementById('summary-missed-list');
+    var missedBtn = document.getElementById('summary-review-missed-btn');
+    if (missedCardsThisSession.size > 0) {
+        missedSection.style.display = 'block';
+        if (missedBtn) missedBtn.style.display = 'block';
+        missedList.innerHTML = '';
+        Array.from(missedCardsThisSession).forEach(function(i){
+            var c = allCards[i];
+            if (!c || !c.q) return;
+            var item = document.createElement('div');
+            item.className = 'summary-missed-item';
+            item.textContent = c.q.length > 90 ? c.q.slice(0,90)+'…' : c.q;
+            missedList.appendChild(item);
+        });
+        renderMath(missedList);
+    } else {
+        missedSection.style.display = 'none';
+        if (missedBtn) missedBtn.style.display = 'none';
+    }
+
     document.getElementById('session-summary').classList.add('show');
+}
+
+function reviewMissedFromSummary() {
+    if (!missedCardsThisSession.size) return;
+    document.getElementById('session-summary').classList.remove('show');
+    document.querySelector('.summary-modal').classList.remove('full-lesson');
+    var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
+    var srs   = getLessonSRS(currentSubject, currentTopic, currentLesson);
+    shuffledCards = shuffle(Array.from(missedCardsThisSession).map(function(i){
+        return {q:cards[i].q,a:cards[i].a,type:cards[i].type,options:cards[i].options,correct:cards[i].correct,mark:cards[i].mark,srs:srs[i]||createSRS(),_index:i};
+    }).filter(function(c){ return c.q; }));
+    missedCardsThisSession.clear();
+    cardIndex = 0; sessionStats = {total:0, correct:0};
+    renderCard(); renderContSel();
+    if (timerEnabled) startTimer();
 }
 
 function closeSummaryAndGo(contId) {
     document.getElementById('session-summary').classList.remove('show');
-    selectContainer(contId);
+    if (contId === 'srs') { selectSRS(); } else { selectContainer(contId); }
     sessionStats = {total:0, correct:0};
     missedCardsThisSession.clear();
     if (timerEnabled) startTimer();
@@ -3409,7 +3482,7 @@ function restartSession() {
     document.querySelector('.summary-modal').classList.remove('full-lesson');
     stopTimer();
     cardIndex=0; sessionStats={total:0,correct:0}; missedCardsThisSession.clear();
-    currentContainer='all'; reviewMissedMode=false; reviewBookmarksMode=false; reviewWeakMode=false;
+    currentContainer='srs'; reviewBookmarksMode=false;
     buildShuffledCards(); renderCard(); renderContSel();
     if (timerEnabled) startTimer();
 }
@@ -3546,7 +3619,7 @@ function shiftSet(dir) {
     var all = getLessonCards(currentSubject, currentTopic, currentLesson);
     var numSets = Math.ceil(all.length / CARDS_PER_CONTAINER);
     if (numSets <= 1) return;
-    var cur = (currentContainer === 'all') ? -1 : currentContainer;
+    var cur = (typeof currentContainer === 'number') ? currentContainer : -1;
     var next = cur + dir;
     if (next < 0) next = numSets - 1;        // wrap around
     if (next >= numSets) next = 0;
