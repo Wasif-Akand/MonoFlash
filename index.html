@@ -371,6 +371,13 @@
         .saq-bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
         .saq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;color:#fff;}
         .saq-mark-badge{font-size:.65rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border-b);background:rgba(255,255,255,.05);color:var(--dim);}
+        .saq-answer-wrap{display:grid;grid-template-rows:0fr;width:100%;opacity:0;transition:grid-template-rows .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
+        .saq-answer-wrap.revealed{grid-template-rows:1fr;opacity:1;}
+        .saq-answer-inner{overflow:hidden;min-height:0;}
+        .saq-answer-box{font-size:.95rem;font-weight:500;line-height:1.5;color:#fff;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px 16px;margin-top:12px;text-align:center;}
+        .saq-answer-prompt{font-size:.72rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);cursor:pointer;padding:9px 18px;border:1px dashed var(--border-b);border-radius:999px;transition:all .2s cubic-bezier(.4,0,.2,1);user-select:none;touch-action:manipulation;}
+        .saq-answer-prompt:hover{color:#fff;border-color:var(--accent);background:rgba(255,255,255,.05);}
+        .saq-answer-prompt:active{transform:scale(.96);}
         .saq-controls{display:flex;gap:8px;justify-content:center;margin-top:2px;padding:0 8px;flex-shrink:0;}
         .saq-controls .btn{flex:1;padding:12px 6px;font-size:.72rem;}
         .mcq-card{position:relative;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;box-shadow:var(--sh-lg);min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;flex-shrink:0;}
@@ -394,8 +401,6 @@
         .mcq-db-options{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
         .db-mcq-opt{font-size:.72rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border-b);background:rgba(255,255,255,.03);color:var(--dim);}
         .db-mcq-opt.correct{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.08);color:#2ecc71;font-weight:700;}
-        .db-saq-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;}
-        .db-saq-mark{font-size:.72rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border-b);background:rgba(255,255,255,.04);color:var(--dim);flex-shrink:0;min-width:36px;text-align:center;}
         .home-content{display:flex;flex-direction:column;gap:14px;padding:4px 0 12px;}
         .home-btn{padding:12px 24px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:#fff;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:.9rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;box-shadow:var(--sh-sm);user-select:none;}
         .home-btn:hover{transform:translateY(-2px);background:var(--surface-el);box-shadow:0 6px 20px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.08);border-color:var(--accent);}
@@ -847,9 +852,9 @@
                     <div class="home-item"><span class="home-item-bullet">1.</span><span>Create a <strong>Subject</strong> → add a <strong>Topic</strong> inside it</span></div>
                     <div class="home-item"><span class="home-item-bullet">2.</span><span>Select the topic from the sidebar — you'll see the <strong>Lessons screen</strong></span></div>
                     <div class="home-item"><span class="home-item-bullet">3.</span><span>+ New Top-Level Lesson → pick <strong>Flashcards</strong>, <strong>MCQ</strong>, or <strong>SAQ</strong>, then add cards from the Data tab</span></div>
-                    <div class="home-item"><span class="home-item-bullet">4.</span><span>Click a lesson to start reviewing — MCQ lessons are tap-to-answer, SAQs show the answer and mark, all tracked by SRS</span></div>
+                    <div class="home-item"><span class="home-item-bullet">4.</span><span>Click a lesson to start reviewing — MCQ lessons are tap-to-answer, SAQs hide the answer until you tap to reveal it, all tracked by SRS</span></div>
                     <div class="home-item"><span class="home-item-bullet">5.</span><span>Use the ← Back button to return to lesson list anytime</span></div>
-                    <div class="home-tip" style="margin-top:8px;"><strong>Import format:</strong> Flashcards → Question -!- Answer &nbsp;·&nbsp; MCQ → Question -!- Option 1 -!- Option 2 -!- Option 3 -!- Option 4 -!- Correct Answer &nbsp;·&nbsp; SAQ → Question -!- Mark</div>
+                    <div class="home-tip" style="margin-top:8px;"><strong>Import format:</strong> Flashcards → Question -!- Answer &nbsp;·&nbsp; MCQ → Question -!- Option 1 -!- Option 2 -!- Option 3 -!- Option 4 -!- Correct Answer &nbsp;·&nbsp; SAQ → Question -!- Answer (answer stays hidden until tapped)</div>
                 </div>
 
                 <section class="home-section">
@@ -920,7 +925,12 @@
                 <div class="saq-card" id="saq-card">
                     <div class="saq-bookmark-icon" id="saq-bookmark-icon" onclick="toggleBookmark(event)">☆</div>
                     <div class="saq-question" id="saq-question"></div>
-                    <span class="saq-mark-badge" id="saq-mark-badge"></span>
+                    <div class="saq-answer-wrap" id="saq-answer-wrap">
+                        <div class="saq-answer-inner">
+                            <div class="saq-answer-box" id="saq-answer-box"></div>
+                        </div>
+                    </div>
+                    <div class="saq-answer-prompt" id="saq-answer-prompt" onclick="toggleSAQAnswer()">Tap to reveal answer</div>
                 </div>
                 <div class="saq-controls">
                     <button class="btn" onclick="previousCard()">&larr; Back</button>
@@ -928,7 +938,7 @@
                     <button class="btn btn-primary" onclick="nextCard(true)">Got it</button>
                     <button class="btn" onclick="nextCard('pass')">Next &rarr;</button>
                 </div>
-                <div class="mcq-hint">A/&larr; wrong &nbsp;&middot;&nbsp; D/&rarr; got it &nbsp;&middot;&nbsp; S/&darr; next &nbsp;&middot;&nbsp; / back</div>
+                <div class="mcq-hint">W/↑ reveal &nbsp;&middot;&nbsp; A/&larr; wrong &nbsp;&middot;&nbsp; D/&rarr; got it &nbsp;&middot;&nbsp; S/&darr; next &nbsp;&middot;&nbsp; / back</div>
             </div>
             <div class="controls">
                 <button class="btn" onclick="nextCard(false)">Missed</button>
@@ -1435,8 +1445,8 @@ function renderSidebar() {
             actions.appendChild(del);
             title.appendChild(actions); item.appendChild(title);
             var subList = document.createElement('div'); subList.className='sub-list';
-            subList.dataset.subject = subj;
             subList.id = 'sub-'+safeId(subj);
+            subList.dataset.subject = subj;
             for (var topic in cardContent[subj]) {
                 (function(topic){
                     var si = document.createElement('div'); si.className='sub-item';
@@ -1752,7 +1762,7 @@ function updateLessonCreateToggleUI() {
     if (lessonCreateType === 'mcq') {
         hint.innerHTML = 'MCQ lesson. After creating, add questions from the <strong style="color:var(--dim);">Data tab</strong> using:<br><code>Question -!- Option 1 -!- Option 2 -!- Option 3 -!- Option 4 -!- Correct Answer</code><br>The correct answer must match one option\u2019s text exactly. Studied with tap-to-answer, auto-graded by SRS.';
     } else if (lessonCreateType === 'saq') {
-        hint.innerHTML = 'SAQ lesson. After creating, add questions from the <strong style="color:var(--dim);">Data tab</strong> using:<br><code>Question -!- Mark</code><br>The mark is saved with the card and shown in the database tab.';
+        hint.innerHTML = 'SAQ lesson. After creating, add questions from the <strong style="color:var(--dim);">Data tab</strong> using:<br><code>Question -!- Answer</code><br>The answer stays hidden until tapped during study.';
     } else {
         hint.textContent = 'Cards behave as usual — add Q/A pairs from the Data tab after creating, using Question -!- Answer.';
     }
@@ -2014,9 +2024,20 @@ function renderMCQOptions(c) {
 
 function renderSAQCard(c) {
     var qEl = document.getElementById('saq-question');
-    var markEl = document.getElementById('saq-mark-badge');
+    var aEl = document.getElementById('saq-answer-box');
+    var wrap = document.getElementById('saq-answer-wrap');
+    var prompt = document.getElementById('saq-answer-prompt');
     if (qEl) { qEl.textContent = c.q; qEl.dataset.raw = c.q; renderMath(qEl); }
-    if (markEl) markEl.textContent = 'Mark: ' + (c.mark || '1');
+    if (aEl) { aEl.textContent = c.a; aEl.dataset.raw = c.a; renderMath(aEl); }
+    if (wrap) wrap.classList.remove('revealed');
+    if (prompt) { prompt.style.display = 'inline-block'; prompt.textContent = 'Tap to reveal answer'; }
+}
+function toggleSAQAnswer() {
+    var wrap = document.getElementById('saq-answer-wrap');
+    var prompt = document.getElementById('saq-answer-prompt');
+    if (!wrap) return;
+    var showing = wrap.classList.toggle('revealed');
+    if (prompt) prompt.style.display = showing ? 'none' : 'inline-block';
 }
 function selectMCQOption(opt, btnEl) {
     if (mcqLocked) return;
@@ -2332,10 +2353,8 @@ function dbCardContentHtml(c) {
             html += '<span class="db-mcq-opt'+(isCorrect?' correct':'')+'">'+(isCorrect?'✓ ':'')+escHtml(opt)+'</span>';
         });
         html += '</div>';
-    } else if (c.type === 'saq') {
-        return '<div class="db-item-content db-saq-row"><div class="db-key">'+escHtml(c.q)+'</div><span class="db-saq-mark">Mark: '+escHtml(c.mark || '1')+'</span></div>';
     } else {
-        html += '<div class="db-val">'+escHtml(c.a)+'</div>';
+        html += '<div class="db-val">'+escHtml(c.a||'')+'</div>';
     }
     html += '</div>';
     return html;
@@ -2360,10 +2379,10 @@ function renderDbList() {
     var placeholder = curType === 'mcq'
         ? "##"+currentLesson+"\nWhat is the capital of France? -!- London -!- Paris -!- Berlin -!- Madrid -!- Paris\nWhich planet is closest to the Sun? -!- Venus -!- Earth -!- Mercury -!- Mars -!- Mercury"
         : curType === 'saq'
-        ? "##"+currentLesson+"\nWhat is gravity? -!- 2\nWhat is mass? -!- 1"
+        ? "##"+currentLesson+"\nWhat is gravity? -!- Force that attracts objects\nWhat is mass? -!- Amount of matter in an object"
         : "##Lesson 1\nWhat is gravity? -!- Force that attracts objects\nWhat is speed? -!- Distance over time\n\n##Lesson 2\nWhat is mass? -!- Amount of matter";
     html += '<textarea id="json-input" placeholder="'+escAttr(placeholder)+'"></textarea>';
-    html += '<div class="db-sub">Flashcards: <strong style="color:var(--dim);">Question -!- Answer</strong> &nbsp;·&nbsp; MCQ: <strong style="color:var(--dim);">Question -!- Option 1 -!- Option 2 -!- Option 3 -!- Option 4 -!- Correct Answer</strong> &nbsp;·&nbsp; SAQ: <strong style="color:var(--dim);">Question -!- Mark</strong></div>';
+    html += '<div class="db-sub">Flashcards: <strong style="color:var(--dim);">Question -!- Answer</strong> &nbsp;·&nbsp; MCQ: <strong style="color:var(--dim);">Question -!- Option 1 -!- Option 2 -!- Option 3 -!- Option 4 -!- Correct Answer</strong> &nbsp;·&nbsp; SAQ: <strong style="color:var(--dim);">Question -!- Answer</strong> (hidden until tapped)</div>';
     html += '<input id="file-input" type="file" accept=".json" style="display:none" onchange="importJsonFile(event)">';
     html += '<div class="db-btn-group">';
     html += '<button class="btn btn-primary" onclick="importData()">Import</button>';
@@ -2426,11 +2445,13 @@ function renderDbList() {
 }
 
 // ── IMPORT ──────────────────────────────────────────────────────────────
-function parseBlockFormat(text) {
+function parseBlockFormat(text, defaultLessonName) {
     // ##Lesson Name\nQ -!- A\nQ -!- A\n\n##Lesson 2\n...
     // MCQ line (auto-detected, exactly 6 segments): Q -!- Opt1 -!- Opt2 -!- Opt3 -!- Opt4 -!- CorrectAnswer
-    // SAQ line (exactly 2 segments): Q -!- Mark
-    var result = {}; // lessonName -> [{q,a} or {q,a,type:'mcq',options,correct} or {q,mark,type:'saq'}]
+    // SAQ line: same 2-segment Q -!- A shape as flashcards — disambiguated by
+    // the target lesson's actual type (an SAQ-typed lesson gets tap-to-reveal
+    // cards, everything else gets regular flip flashcards).
+    var result = {}; // lessonName -> [{q,a} or {q,a,type:'mcq',options,correct} or {q,a,type:'saq'}]
     var currentLessonName = null;
     var lines = text.split('\n');
     lines.forEach(function(line) {
@@ -2441,7 +2462,7 @@ function parseBlockFormat(text) {
             return;
         }
         if (!trimmed.includes('-!-')) return;
-        var target = currentLessonName || 'Lesson 1';
+        var target = currentLessonName || defaultLessonName || 'Lesson 1';
         if (!result[target]) result[target] = [];
         var rawParts = trimmed.split('-!-');
         if (rawParts.length === 6) {
@@ -2453,19 +2474,13 @@ function parseBlockFormat(text) {
                 return;
             }
         }
-        if (rawParts.length === 2) {
-            var sq = rawParts[0].trim();
-            var mark = rawParts[1].trim();
-            // Only treat as SAQ if the second part is a pure number (a mark/score like 1, 2, 3.5).
-            // Text answers (e.g. "Force that attracts objects") fall through to the regular flashcard handler.
-            if (sq && mark && /^\d+(\.\d+)?$/.test(mark)) {
-                result[target].push({ q:sq, type:'saq', mark:mark });
-                return;
-            }
-        }
         if (rawParts.length>=2) {
             var q=rawParts[0].trim(), a=rawParts.slice(1).join('-!-').trim();
-            if (q&&a) result[target].push({q,a});
+            if (q&&a) {
+                var targetType = getLessonType(currentSubject, currentTopic, target);
+                if (targetType === 'saq') result[target].push({q:q, a:a, type:'saq'});
+                else result[target].push({q,a});
+            }
         }
     });
     return result;
@@ -2497,7 +2512,7 @@ function importData() {
 
     // Try block text format
     if (!lessonMap) {
-        lessonMap = parseBlockFormat(raw);
+        lessonMap = parseBlockFormat(raw, currentLesson);
     }
 
     if (!lessonMap || Object.keys(lessonMap).length === 0) {
@@ -2561,13 +2576,10 @@ function quickAddCard() {
     if (cards.some(function(c){ return c.q.trim().toLowerCase()===q.toLowerCase(); })){
         alert('A card with this question already exists.'); return;
     }
+    if (!q||!a){ alert('Both question and answer are required.'); return; }
     if (getLessonType(currentSubject, currentTopic, currentLesson) === 'saq') {
-        if (!q){ alert('Question is required.'); return; }
-        var mark = prompt('Mark for this SAQ card:', '1');
-        if (mark === null) return;
-        cards.push({q:q,mark:String(mark).trim() || '1',type:'saq'});
+        cards.push({q:q,a:a,type:'saq'});
     } else {
-        if (!q||!a){ alert('Both question and answer are required.'); return; }
         cards.push({q:q,a:a});
     }
     ensureSRS(); saveData(); renderSidebar(); updateHomeStats();
@@ -2602,8 +2614,8 @@ function editCard(idx) {
         }
         f += '</div>';
     } else if (type === 'saq') {
-        f += '<div class="db-edit-field"><label class="db-edit-label">Mark</label>';
-        f += '<input class="db-edit-input" id="eem'+idx+'" type="text" value="'+escAttr(card.mark||'1')+'" style="width:80px;"></div>';
+        f += '<div class="db-edit-field"><label class="db-edit-label">Answer</label>';
+        f += '<textarea class="db-edit-input" id="eea'+idx+'" rows="2">'+escHtml(card.a||'')+'</textarea></div>';
     } else {
         f += '<div class="db-edit-field"><label class="db-edit-label">Answer</label>';
         f += '<textarea class="db-edit-input" id="eea'+idx+'" rows="2">'+escHtml(card.a||'')+'</textarea></div>';
@@ -2643,9 +2655,11 @@ function saveCardEdit(idx) {
         var correct = opts[parseInt(r.value, 10)];
         cards[idx] = { q:newQ, a:correct, type:'mcq', options:opts, correct:correct };
     } else if (type === 'saq') {
-        var mEl = document.getElementById('eem' + idx);
-        var newMark = mEl ? (mEl.value.trim() || '1') : '1';
-        cards[idx] = { q:newQ, mark:newMark, type:'saq' };
+        var saqAEl = document.getElementById('eea' + idx);
+        if (!saqAEl) return;
+        var newSaqA = saqAEl.value.trim();
+        if (!newSaqA) { saqAEl.focus(); alert('Answer cannot be empty.'); return; }
+        cards[idx] = { q:newQ, a:newSaqA, type:'saq' };
     } else {
         var aEl = document.getElementById('eea' + idx);
         if (!aEl) return;
@@ -3674,8 +3688,8 @@ document.addEventListener('keydown', function(e) {
         else if (e.code === 'Escape') { e.preventDefault(); goBackToLessons(); }
         return;
     }
-    if (e.code === 'Space' || e.code === 'Enter')  { e.preventDefault(); flipCard(); }
-    else if (e.code === 'KeyW' || e.code === 'ArrowUp')       { e.preventDefault(); flipCard(); }       // W or ↑ = flip
+    if (e.code === 'Space' || e.code === 'Enter')  { e.preventDefault(); curCard && curCard.type==='saq' ? toggleSAQAnswer() : flipCard(); }
+    else if (e.code === 'KeyW' || e.code === 'ArrowUp')       { e.preventDefault(); curCard && curCard.type==='saq' ? toggleSAQAnswer() : flipCard(); }       // W or ↑ = flip/reveal
     else if (e.code === 'KeyA' || e.code === 'ArrowLeft')     { e.preventDefault(); nextCard(false); }  // A or ← = Wrong
     else if (e.code === 'KeyS' || e.code === 'ArrowDown')     { e.preventDefault(); nextCard('pass'); } // S or ↓ = Pass
     else if (e.code === 'KeyD' || e.code === 'ArrowRight')    { e.preventDefault(); nextCard(true); }   // D or → = Got it
