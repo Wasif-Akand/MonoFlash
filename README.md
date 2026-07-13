@@ -199,7 +199,6 @@ I'm Wasif Akand, 17, based in Dhaka, Bangladesh. I built MonoFlash from scratch 
 
 I like building things end-to-end: front-end, algorithms, backend, the design system, all of it. This project is the clearest single artifact of that — a spaced-repetition engine, a sync backend, real math rendering, and a handful of genuinely gnarly browser-rendering bugs, all solved from a blank HTML file.
 
-**[Add your links here — GitHub / portfolio / email / LinkedIn]**
 
 ---
 
