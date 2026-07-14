@@ -212,7 +212,7 @@
         .card.flipped #card-front{display:none;}
         .card.flipped #card-back{display:flex;}
         .card-back{background:#050505;border-color:var(--accent);box-shadow:inset 0 2px 8px rgba(0,0,0,.8),0 0 24px rgba(255,255,255,.1);}
-        .card-face-content{max-width:100%;}
+        .card-face-content{max-width:100%;word-wrap:break-word;overflow-wrap:break-word;}
         .controls{display:flex;gap:10px;justify-content:center;margin-top:10px;padding:0 8px;flex-shrink:0;}
         .btn{padding:12px 20px;border-radius:10px;border:1px solid var(--border-b);background:var(--surface);color:#fff;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);font-size:.85rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;box-shadow:var(--sh-sm);user-select:none;position:relative;touch-action:manipulation;}
         .btn:hover{transform:translateY(-2px);background:var(--surface-el);box-shadow:0 6px 20px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.08);border-color:var(--accent);}
@@ -378,7 +378,7 @@
         .saq-bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.4rem;cursor:pointer;z-index:10;user-select:none;transition:all .25s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
         .saq-bookmark-icon:hover{transform:scale(1.2) rotate(-10deg);}
         .saq-bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
-        .saq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;color:#fff;}
+        .saq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;color:#fff;word-wrap:break-word;overflow-wrap:break-word;}
         .saq-mark-badge{font-size:.65rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border-b);background:rgba(255,255,255,.05);color:var(--dim);}
         .saq-answer-wrap{display:grid;grid-template-rows:0fr;width:100%;opacity:0;transition:grid-template-rows .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
         .saq-answer-wrap.revealed{grid-template-rows:1fr;opacity:1;}
@@ -390,7 +390,7 @@
         .saq-controls{display:flex;gap:8px;justify-content:center;margin-top:2px;padding:0 8px;flex-shrink:0;}
         .saq-controls .btn{flex:1;padding:12px 6px;font-size:.72rem;}
         .mcq-card{position:relative;border:1.5px solid var(--border-b);border-radius:16px;background:var(--surface-el);padding:24px 20px;box-shadow:var(--sh-lg);min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;flex-shrink:0;}
-        .mcq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;}
+        .mcq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;word-wrap:break-word;overflow-wrap:break-word;}
         .mcq-bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.4rem;cursor:pointer;z-index:10;user-select:none;transition:all .25s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
         .mcq-bookmark-icon:hover{transform:scale(1.2) rotate(-10deg);}
         .mcq-bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
@@ -661,9 +661,9 @@
         @media(max-height:500px) and (orientation:landscape){.card-face{font-size:.95rem;padding:12px;}}
 
         /* LATEX / KATEX THEMING */
-        .katex{color:inherit;font-size:1.05em;}
+        .katex{color:inherit;font-size:1.05em;display:inline;white-space:nowrap;}
         .katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden;}
-        .katex-display>.katex{white-space:normal;}
+        .katex-display>.katex{white-space:normal;display:inline-block;}
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>
@@ -2444,10 +2444,10 @@ function renderDbList() {
     if (!wrap) return;
 
     var existingSearch = document.getElementById('db-search-input');
-    var preserveValue = existingSearch ? existingSearch.value : dbSearchQuery;
     var preserveFocus = !!(existingSearch && document.activeElement === existingSearch);
-    var preserveStart = existingSearch ? existingSearch.selectionStart : null;
-    var preserveEnd = existingSearch ? existingSearch.selectionEnd : null;
+    var preserveStart = existingSearch ? existingSearch.selectionStart : 0;
+    var preserveEnd = existingSearch ? existingSearch.selectionEnd : 0;
+    var preserveValue = existingSearch ? existingSearch.value : dbSearchQuery;
 
     if (!currentSubject||!currentTopic) {
         wrap.innerHTML = '<p style="color:var(--dimmer);text-align:center;padding:40px 20px;">Select a topic from the sidebar first.</p>';
@@ -2476,6 +2476,12 @@ function renderDbList() {
     html += '<button class="btn" onclick="document.getElementById(\'file-input\').click()">Import File</button>';
     html += '</div>';
 
+    // Create search HTML separately (will be injected after main content)
+    var searchHtml = '<div class="db-search-wrap">'+
+        '<svg class="db-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"></path></svg>'+
+        '<input class="db-search-input temp-search" placeholder="Search questions or answers..." autocomplete="off" inputmode="text" spellcheck="false">'+
+        '</div>';
+
     // Per-lesson cards
     if (currentLesson) {
         var cards = getLessonCards(currentSubject, currentTopic, currentLesson);
@@ -2483,10 +2489,7 @@ function renderDbList() {
         cards.forEach(function(c,i){ if (matchesDbSearch(c, dbSearchQuery)) visibleCards.push({card:c, idx:i}); });
         html += '<div class="db-list-head"><h3>'+escHtml(currentLesson)+lessonTypeBadgeHtml(curType)+' Cards ('+visibleCards.length+'/'+cards.length+')</h3>';
         html += '<button class="btn" onclick="clearAllCards()" style="padding:8px 16px;font-size:.75rem;">Clear Lesson</button></div>';
-        html += '<div class="db-search-wrap">';
-        html += '<svg class="db-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"></path></svg>';
-        html += '<input class="db-search-input" id="db-search-input" value="'+escAttr(dbSearchQuery)+'" oninput="setDbSearchQuery(this.value)" placeholder="Search questions or answers..." autocomplete="off" spellcheck="false">';
-        html += '</div>';
+        html += searchHtml;
         var curBmList = getLessonBookmarks(currentSubject, currentTopic, currentLesson);
         html += '<div id="db-list">';
         if (visibleCards.length === 0) {
@@ -2508,10 +2511,7 @@ function renderDbList() {
     } else if (lessonNames.length > 0) {
         // Show all lessons' cards
         html += '<div class="db-list-head"><h3>All Lessons</h3></div>';
-        html += '<div class="db-search-wrap">';
-        html += '<svg class="db-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"></path></svg>';
-        html += '<input class="db-search-input" id="db-search-input" value="'+escAttr(dbSearchQuery)+'" oninput="setDbSearchQuery(this.value)" placeholder="Search questions or answers..." autocomplete="off" spellcheck="false">';
-        html += '</div>';
+        html += searchHtml;
         lessonNames.forEach(function(ln) {
             var cards = lessons[ln];
             var lt = getLessonType(currentSubject, currentTopic, ln);
@@ -2547,20 +2547,23 @@ function renderDbList() {
     html += '</div></div>';
 
     wrap.innerHTML = html;
-    var newSearchInput = document.getElementById('db-search-input');
-    if (newSearchInput) {
-        newSearchInput.value = dbSearchQuery;
+    
+    // Find the temp search input and wire it up properly to survive re-renders
+    var tempSearch = wrap.querySelector('.temp-search');
+    if (tempSearch) {
+        tempSearch.id = 'db-search-input';
+        tempSearch.value = dbSearchQuery;
+        tempSearch.oninput = function(){ setDbSearchQuery(this.value); };
+        
+        // Restore focus and cursor if this was the focused element
         if (preserveFocus) {
-            requestAnimationFrame(function(){
-                if (document.activeElement !== newSearchInput) {
-                    newSearchInput.focus();
-                }
-                if (preserveStart !== null && preserveEnd !== null) {
-                    try { newSearchInput.setSelectionRange(preserveStart, preserveEnd); } catch (e) {}
-                }
-            });
+            tempSearch.focus();
+            if (preserveStart >= 0 && preserveEnd >= 0) {
+                try { tempSearch.setSelectionRange(preserveStart, preserveEnd); } catch (e) {}
+            }
         }
     }
+    
     renderMath(wrap);
 }
 
