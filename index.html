@@ -1058,28 +1058,33 @@ function copyTextToClipboard(text) {
 }
 function copyQuestionElement(el) {
     var text = '';
+    var dataEl = el;
     if (el) {
-        text = (el.dataset && el.dataset.raw) ? el.dataset.raw : (el.textContent || '');
-        if (!text && el.getAttribute) {
-            var raw = el.getAttribute('data-raw');
-            if (raw) text = raw;
+        // Walk up DOM tree to find element with data-raw (KaTeX renders into children)
+        if (!dataEl.dataset || !dataEl.dataset.raw) {
+            var closest = el.closest ? el.closest('[data-raw]') : null;
+            if (closest) dataEl = closest;
         }
+        text = (dataEl.dataset && dataEl.dataset.raw) ? dataEl.dataset.raw : '';
+        if (!text) text = dataEl.textContent || '';
     }
     if (!text) text = '';
     copyTextToClipboard(text).then(function(ok){
         if (!ok || !el) return;
-        el.classList.add('copied');
-        var toast = el.querySelector('.copy-toast');
+        // Find the root question element for visual feedback
+        var rootEl = el.closest('[data-raw]') || el;
+        rootEl.classList.add('copied');
+        var toast = rootEl.querySelector('.copy-toast');
         if (!toast) {
             toast = document.createElement('div');
             toast.className = 'copy-toast';
             toast.textContent = 'Question copied';
-            el.appendChild(toast);
+            rootEl.appendChild(toast);
         }
         toast.classList.add('show');
-        clearTimeout(el._copyTimer);
-        el._copyTimer = setTimeout(function(){
-            el.classList.remove('copied');
+        clearTimeout(rootEl._copyTimer);
+        rootEl._copyTimer = setTimeout(function(){
+            rootEl.classList.remove('copied');
             toast.classList.remove('show');
         }, 900);
     });
