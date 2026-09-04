@@ -3753,11 +3753,84 @@ document.addEventListener('keydown', function(e) {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
+    var summary = document.getElementById('session-summary');
+    var onboarding = document.getElementById('onboarding');
     var lcModal = document.getElementById('lesson-create-modal');
     if (lcModal && lcModal.classList.contains('show')) {
         if (e.code === 'Escape') { e.preventDefault(); closeLessonCreateModal(); }
         return;
     }
+
+    if (e.code === 'Escape') {
+        if (summary && summary.classList.contains('show')) { e.preventDefault(); closeSummary(); return; }
+        if (onboarding && onboarding.classList.contains('show')) return;
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) { e.preventDefault(); toggleSidebar(); }
+        return;
+    }
+
+    if (e.ctrlKey || e.metaKey || e.altKey) {
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+            var tabByKey = { 'Digit1':'flashcard', 'Digit2':'performance', 'Digit3':'database' };
+            var tabName = tabByKey[e.code];
+            if (tabName && currentLesson) {
+                e.preventDefault();
+                var tab = document.querySelector('#main-nav .nav-item:nth-child('+(tabName==='flashcard'?1:tabName==='performance'?2:3)+')');
+                if (tab) switchTab(tabName, tab);
+            }
+        }
+        return;
+    }
+
+    if (e.repeat) return;
+
+    var flashcardTab = document.getElementById('tab-flashcard');
+    var studying = currentLesson && flashcardTab && flashcardTab.classList.contains('active');
+    if (studying && shuffledCards.length && cardIndex < shuffledCards.length) {
+        if (shuffledCards[cardIndex].type === 'mcq' && /^[1-4]$/.test(e.key)) {
+            e.preventDefault();
+            var optionButtons = document.querySelectorAll('#mcq-options-wrap .mcq-option');
+            var optionButton = optionButtons[parseInt(e.key, 10) - 1];
+            if (optionButton) optionButton.click();
+            return;
+        }
+
+        var action = {
+            'Space':'flip', 'ArrowUp':'flip',
+            'ArrowLeft':'previous',
+            'ArrowRight':'pass', 'p':'pass', 'P':'pass',
+            'm':'missed', 'M':'missed',
+            'g':'correct', 'G':'correct', 'Enter':'correct',
+            'b':'bookmark', 'B':'bookmark',
+            '[':'previousSet', ']':'nextSet'
+        }[e.key] || {
+            'Space':'flip', 'ArrowUp':'flip', 'ArrowLeft':'previous',
+            'ArrowRight':'pass', 'KeyP':'pass', 'KeyM':'missed',
+            'KeyG':'correct', 'Enter':'correct', 'KeyB':'bookmark'
+        }[e.code];
+
+        if (action) {
+            e.preventDefault();
+            if (action === 'flip') {
+                if (shuffledCards[cardIndex].type === 'saq') toggleSAQAnswer();
+                else flipCard();
+            } else if (action === 'previous') previousCard();
+            else if (action === 'pass') nextCard('pass');
+            else if (action === 'missed') nextCard(false);
+            else if (action === 'correct') {
+                if (shuffledCards[cardIndex].type === 'mcq') {
+                    var correctOption = document.querySelector('#mcq-options-wrap .mcq-option.correct');
+                    if (correctOption) correctOption.click();
+                } else nextCard(true);
+            } else if (action === 'bookmark') toggleBookmark({ stopPropagation:function(){} });
+            else if (action === 'previousSet') shiftSet(-1);
+            else if (action === 'nextSet') shiftSet(1);
+            return;
+        }
+    }
+
+    if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleSidebar(); return; }
+    if (e.key === 'h' || e.key === 'H') { e.preventDefault(); switchToHome(); return; }
 });
 
 // ── UTILS ──────────────────────────────────────────────────────────────
