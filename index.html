@@ -69,6 +69,7 @@
         .inline-add-input::placeholder{color:var(--dimmer);}
         /* SWIPE HINT */
         .swipe-hint{font-size:.65rem;color:var(--dimmer);text-align:center;margin-top:6px;opacity:.6;letter-spacing:.3px;}
+        .shortcut-key{display:inline-block;padding:1px 5px;border:1px solid var(--border-b);border-radius:4px;background:var(--surface);color:var(--dim);font-family:monospace;font-size:.62rem;line-height:1.3;}
         .card-face-content, .mcq-question, .saq-question{cursor:pointer;position:relative;}
         .card-face-content.copied, .mcq-question.copied, .saq-question.copied{outline:1px solid rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.2) inset;}
         .copy-toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);padding:7px 10px;border:1px solid rgba(255,255,255,.12);border-radius:6px;background:rgba(10,10,10,.92);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.3px;box-shadow:0 6px 18px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .2s ease,transform .2s ease;white-space:nowrap;z-index:8;}
@@ -928,7 +929,7 @@
                     <div class="mcq-question" id="mcq-question" onclick="copyQuestionElement(this)"></div>
                 </div>
                 <div class="mcq-options" id="mcq-options-wrap"></div>
-                <div class="mcq-hint">Tap the question to copy it, or use the buttons below to respond.</div>
+                <div class="mcq-hint">Press <span class="shortcut-key">1</span>-<span class="shortcut-key">4</span> to answer · <span class="shortcut-key">G</span> got it · <span class="shortcut-key">M</span> wrong · <span class="shortcut-key">P</span> next · <span class="shortcut-key">B</span> bookmark</div>
             </div>
             <div class="saq-wrap" id="saq-wrap">
                 <div class="saq-card" id="saq-card">
@@ -947,13 +948,14 @@
                     <button class="btn btn-primary" onclick="nextCard(true)">Got it</button>
                     <button class="btn" onclick="nextCard('pass')">Next &rarr;</button>
                 </div>
-                <div class="mcq-hint">Tap the question to copy it, then use the buttons above to continue.</div>
+                <div class="mcq-hint">Press <span class="shortcut-key">Space</span> to reveal · <span class="shortcut-key">G</span> got it · <span class="shortcut-key">M</span> wrong · <span class="shortcut-key">P</span> next · <span class="shortcut-key">B</span> bookmark</div>
             </div>
             <div class="controls">
                 <button class="btn" onclick="nextCard(false)">Missed</button>
                 <button class="btn" onclick="nextCard('pass')">Pass</button>
                 <button class="btn btn-primary" onclick="nextCard(true)">Got it</button>
             </div>
+            <div class="swipe-hint"><span class="shortcut-key">Space</span> flip · <span class="shortcut-key">M</span> missed · <span class="shortcut-key">P</span> pass · <span class="shortcut-key">G</span> got it · <span class="shortcut-key">B</span> bookmark · <span class="shortcut-key">←</span> back</div>
         </div>
 
         <!-- STATS -->
