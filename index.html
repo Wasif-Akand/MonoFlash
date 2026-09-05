@@ -70,7 +70,7 @@
         /* SWIPE HINT */
         .swipe-hint{font-size:.65rem;color:var(--dimmer);text-align:center;margin-top:6px;opacity:.6;letter-spacing:.3px;}
         .shortcut-key{display:inline-block;padding:1px 5px;border:1px solid var(--border-b);border-radius:4px;background:var(--surface);color:var(--dim);font-family:monospace;font-size:.62rem;line-height:1.3;}
-        .card-face-content, .mcq-question, .saq-question{cursor:pointer;position:relative;}
+        .card-face-content, .mcq-question, .saq-question{position:relative;}
         .card-face-content.copied, .mcq-question.copied, .saq-question.copied{outline:1px solid rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.2) inset;}
         .copy-toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);padding:7px 10px;border:1px solid rgba(255,255,255,.12);border-radius:6px;background:rgba(10,10,10,.92);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.3px;box-shadow:0 6px 18px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .2s ease,transform .2s ease;white-space:nowrap;z-index:8;}
         .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(-2px);} 
@@ -201,6 +201,9 @@
         .bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.5rem;cursor:pointer;z-index:10;transition:all .25s cubic-bezier(.4,0,.2,1);user-select:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
         .bookmark-icon:hover{transform:scale(1.2) rotate(-10deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,.8));}
         .bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
+        .card-copy-btn{position:absolute;top:10px;right:48px;width:32px;height:32px;padding:0;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;z-index:10;transition:all var(--tf);user-select:none;}
+        .card-copy-btn:hover{color:var(--text);background:rgba(255,255,255,.08);border-color:var(--border-b);transform:translateY(-1px);}
+        .card-copy-btn:active{transform:scale(.92);}
         .card-container{flex:1;display:flex;justify-content:center;align-items:center;perspective:1600px;padding:8px 0;min-height:0;}
         /* CARD TRANSITION — 2D squash-swap flip (avoids 3D rotateY/backface-visibility text blur) */
         .card{width:100%;max-width:420px;height:clamp(200px,35vh,300px);position:relative;transition:transform .28s cubic-bezier(.4,0,.2,1),box-shadow var(--tn);cursor:pointer;box-shadow:var(--sh-lg);}
@@ -379,6 +382,7 @@
         .saq-bookmark-icon{position:absolute;top:12px;right:12px;font-size:1.4rem;cursor:pointer;z-index:10;user-select:none;transition:all .25s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
         .saq-bookmark-icon:hover{transform:scale(1.2) rotate(-10deg);}
         .saq-bookmark-icon.active{filter:drop-shadow(0 0 8px rgba(255,215,0,.6));}
+        .saq-card .card-copy-btn,.mcq-card .card-copy-btn{top:9px;right:46px;}
         .saq-question{font-size:clamp(1rem,3vw,1.2rem);font-weight:600;line-height:1.5;color:#fff;word-wrap:break-word;overflow-wrap:break-word;}
         .saq-mark-badge{font-size:.65rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border-b);background:rgba(255,255,255,.05);color:var(--dim);}
         .saq-answer-wrap{display:grid;grid-template-rows:0fr;width:100%;opacity:0;transition:grid-template-rows .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
@@ -919,6 +923,7 @@
             <div class="card-container">
                 <div class="card" id="active-card">
                     <div class="bookmark-icon" id="bookmark-icon" onclick="toggleBookmark(event)">☆</div>
+                    <button class="card-copy-btn" type="button" aria-label="Copy card text" title="Copy card text" onclick="copyActiveCard(event)">&#x29C9;</button>
                     <div class="card-face" onclick="handleCardFaceClick(event)" id="card-front"><div class="card-face-content" id="card-front-content">Select a topic to begin</div></div>
                     <div class="card-face card-back" onclick="handleCardFaceClick(event)" id="card-back"><div class="card-face-content" id="card-back-content">Your journey starts here</div></div>
                 </div>
@@ -926,7 +931,8 @@
             <div class="mcq-wrap" id="mcq-wrap">
                 <div class="mcq-card">
                     <div class="mcq-bookmark-icon" id="mcq-bookmark-icon" onclick="toggleBookmark(event)">☆</div>
-                    <div class="mcq-question" id="mcq-question" onclick="copyQuestionElement(this)"></div>
+                    <button class="card-copy-btn" type="button" aria-label="Copy question" title="Copy question" onclick="copyQuestionButton(event, 'mcq-question')">&#x29C9;</button>
+                    <div class="mcq-question" id="mcq-question"></div>
                 </div>
                 <div class="mcq-options" id="mcq-options-wrap"></div>
                 <div class="mcq-hint">Press <span class="shortcut-key">1</span>-<span class="shortcut-key">4</span> to answer · <span class="shortcut-key">G</span> got it · <span class="shortcut-key">M</span> wrong · <span class="shortcut-key">P</span> next · <span class="shortcut-key">B</span> bookmark</div>
@@ -934,7 +940,8 @@
             <div class="saq-wrap" id="saq-wrap">
                 <div class="saq-card" id="saq-card">
                     <div class="saq-bookmark-icon" id="saq-bookmark-icon" onclick="toggleBookmark(event)">☆</div>
-                    <div class="saq-question" id="saq-question" onclick="copyQuestionElement(this)"></div>
+                    <button class="card-copy-btn" type="button" aria-label="Copy question" title="Copy question" onclick="copyQuestionButton(event, 'saq-question')">&#x29C9;</button>
+                    <div class="saq-question" id="saq-question"></div>
                     <div class="saq-answer-wrap" id="saq-answer-wrap">
                         <div class="saq-answer-inner">
                             <div class="saq-answer-box" id="saq-answer-box"></div>
@@ -1092,10 +1099,19 @@ function copyQuestionElement(el) {
     });
     return false;
 }
+function copyQuestionButton(e, elementId) {
+    if (e) e.stopPropagation();
+    copyQuestionElement(document.getElementById(elementId));
+    return false;
+}
+function copyActiveCard(e) {
+    if (e) e.stopPropagation();
+    var card = document.getElementById('active-card');
+    var contentId = card && card.classList.contains('flipped') ? 'card-back-content' : 'card-front-content';
+    copyQuestionElement(document.getElementById(contentId));
+    return false;
+}
 function handleCardFaceClick(e) {
-    var face = e && e.currentTarget ? e.currentTarget : null;
-    var contentEl = face ? face.querySelector('.card-face-content') : null;
-    if (contentEl) copyQuestionElement(contentEl);
     flipCard();
 }
 function completeOnboarding() {
